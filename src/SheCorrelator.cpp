@@ -211,7 +211,7 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
 	Notebook::get()->report(ss.str());
     }
     if (interest==3 && fissionE > 50000 ) {
-    Notebook::get()->report(ss.str());
+        //Notebook::get()->report(ss.str());
     }
     if (interest==1){
         //cout << "INTERESTING alpha!!" << endl;
@@ -300,16 +300,23 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
 	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_FISSION,fissionE/200,ctr);
 	    ittr++;
 	}*/
-	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
+	//plot SF context plots here. 
+        // I-SF dts for <1s in .1 ms (10k) and <10ms in 1 us units (10k).
+        //SF E in E/100 VRecoilE in E/10
+        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1S,fissionE/100.,(fissionTime-VRecoilTime)*1.0e-4);
+        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_10MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e-7);
+	histo.Plot(dammIds::dssd4she::DD_RECOIL_ENERGY_V_SFE,fissionE/100.,VRecoilE/10.);        
+        
+//	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
         //cout << mwpcTime <<endl;
 	/*Event in sf plot*/
-	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
+//	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
 	/*MWPC Plots*/
-        histo.Plot(dammIds::dssd4she::DD_TOF_SF_EVENT,mwpcTime,ctrsf);       
-	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_SF_EVENT,mwpcEnergy,ctrsf);
-	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_V_SFE,fissionE/100,mwpcEnergy/10);
+//        histo.Plot(dammIds::dssd4she::DD_TOF_SF_EVENT,mwpcTime,ctrsf);       
+//	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_SF_EVENT,mwpcEnergy,ctrsf);
+//	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_V_SFE,fissionE/100,mwpcEnergy/10);
     //cout << "SFE " << fissionE/100 << " MWPCE " << mwpcEnergy << endl;
-	ctrsf++;
+	//ctrsf++;
     }
 
     if (interest==4 ) {

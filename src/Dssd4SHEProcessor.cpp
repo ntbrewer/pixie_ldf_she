@@ -261,6 +261,12 @@ void Dssd4SHEProcessor::DeclarePlots(void)
 	    "Event Chains vs. Log of dT between Events");
     DeclareHistogram2D(DD_OTHER_ENERGY_V_TIME,SB,SC,
 	    "Other Event Chains vs. Log of dT between");
+    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_1S, SB, SE,
+	    "dT(.1ms) <1s vs SF Energy/100");
+    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_10MS, SB, SE,
+	    "dT(100ns) <100 us vs SF Energy/100 ");
+    DeclareHistogram2D(DD_RECOIL_ENERGY_V_SFE, SB,SB,
+    	    "Energy of the Recoil/10 vs SF Energy/100");
 /*    DeclareHistogram2D(DD_CHAIN_NUM_FISSION, SC, S9, 
             "Event Number vs. Fission Chain Energy/20");
     DeclareHistogram2D(DD_CHAIN_NUM_ALPHA, SC, S9, 
@@ -949,6 +955,9 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	}
 
         double XYRatio=xEnergy/yEnergy;
+        double dssdEnergy = (xEnergy +yEnergy)/2;
+        double DSRatio=escapeEnergy/dssdEnergy;
+        
 	if (XYRatio>=0 && abs((XYRatio-1)/(XYRatio+1))>=0.01){ //Bad Match 
 	    double dtxy = (*it).first.t-(*it).second.t;
 	    plot(DD_ENERGY_YVX_BAD_MATCH,yEnergy/100,xEnergy/100);
@@ -967,13 +976,14 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	}*/
 	
  
-	SheEvent event = SheEvent((xEnergy +yEnergy)/2 + escapeEnergy, XYRatio,time, mwpc, tof ,MwpcE, hasBeam, hasVeto, escapeEnergy*2/(xEnergy +yEnergy), pixel, unknown);
+	SheEvent event = SheEvent(dssdEnergy + escapeEnergy, XYRatio,time, mwpc, tof ,MwpcE, hasBeam, hasVeto, DSRatio, pixel, unknown);
 	
         pickEventType(event);
 	
 	double eventE=event.get_energy();
         plot(DD_EVENT_POSITION, xPosition, yPosition);    
-    if (!event.get_beam() ) {
+    if (!event.get_beam() ) 
+    {
         plot(D_ENERGY_ALL_BEAMSTOP, eventE/10);
         if (event.get_type() == alpha)
             plot(D_ENERGY_DECAY_BEAMSTOP, eventE/10);
@@ -1044,8 +1054,9 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	}
 
 
-	if (hasEscape && event.get_type() == alpha) {
-	    plot(DD_SI_RAW_EDSSD+escapePos, yEnergy, escapeRaw);
+	if (hasEscape) 
+	{ // && event.get_type() == alpha) {
+	    plot(DD_SI_RAW_EDSSD+escapePos, dssdEnergy, eventE);
 	}
 	//if (  event.get_type()!=heavyIon || ( abs(tof-2000)<1000 && MwpcE > 10 )  ) {
 	    correlator_.add_event(event, xPosition, yPosition, histo);

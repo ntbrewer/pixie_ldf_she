@@ -100,7 +100,6 @@ namespace dammIds {
 
 	const int DD_TOF_SF_EVENT = 74;
 	const int DD_MWPC_ENERGY_SF_EVENT =75;
-	const int DD_MWPC_ENERGY_V_SFE =89;
 	
 	const int DD_OTHER_ALPHA_V_ALPHA = 76;
 	const int DD_OTHER_ENERGY_V_TIME = 77;	
@@ -117,7 +116,8 @@ namespace dammIds {
 	const int DD_ENERGY_YVX_BAD_MATCH = 86; 
 	const int DD_EVT_Y_BAD_MATCH = 87;
         const int DD_EVT_X_BAD_MATCH = 88;
-
+	const int DD_MWPC_ENERGY_V_SFE =89;
+	
 	//const int DD_CHAIN_NUM_ALPHA = 71;
 	//const int DD_CHAIN_NUM_FISSION = 75;
 	const int DD_TRACES_DECAY_CORR_X = 100; 
@@ -126,6 +126,10 @@ namespace dammIds {
         const int DD_TRACES_DECAY_CORR_POS_V_NX = 103;	
         const int DD_TRACES_DECAY_CORR_E_V_NY = 104;	
         const int DD_TRACES_DECAY_CORR_POS_V_NY = 105;	
+        
+        const int DD_CHAINS_ENERGY_V_DTIME_1S = 106;
+        const int DD_CHAINS_ENERGY_V_DTIME_10MS = 107;
+        const int DD_RECOIL_ENERGY_V_SFE = 108;
 /*	const int D_TRACES_DECAY_CORR_GATE1_X = 101; 
 	const int D_TRACES_DECAY_CORR_GATE2_X = 102; 
 	const int D_TRACES_DECAY_CORR_GATE3_X = 103; 
