@@ -211,7 +211,7 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
 	Notebook::get()->report(ss.str());
     }
     if (interest==3 && fissionE > 50000 ) {
-        //Notebook::get()->report(ss.str());
+        Notebook::get()->report(ss.str());
     }
     if (interest==1){
         //cout << "INTERESTING alpha!!" << endl;
@@ -303,10 +303,10 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
 	//plot SF context plots here. 
         // I-SF dts for <1s in .1 ms (10k) and <10ms in 1 us units (10k).
         //SF E in E/100 VRecoilE in E/10
-        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1S,fissionE/100.,(fissionTime-VRecoilTime)*1.0e-4);
-        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_10MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e-7);
+        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1S,fissionE/100.,(fissionTime-VRecoilTime)*1.0e4);
+        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_10MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e7);
 	histo.Plot(dammIds::dssd4she::DD_RECOIL_ENERGY_V_SFE,fissionE/100.,VRecoilE/10.);        
-        
+        cout << fissionTime-VRecoilTime << endl;
 //	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
         //cout << mwpcTime <<endl;
 	/*Event in sf plot*/

@@ -10,7 +10,7 @@ SHELL=/bin/sh
 
 # Undefine to make a "online" version
 # ONLINE = 1 
-
+# PLOTRAWCAL = 1
 # Define to use Gamma-Gamma gates in GeProcessor
 # This turns on Gamma-Gamma angular distribution
 # and Gamma-Gamma-Gamma gates
@@ -76,6 +76,10 @@ CXXFLAGS += -Wall -fPIC -fpermissive $(CINCLUDEDIRS) -Dnewreadout
 
 ifdef ONLINE
 CXXFLAGS += -DONLINE
+endif
+
+ifdef PLOTRAWCAL
+CXXFLAGS += -DPLOTRAWCAL
 endif
 
 #------- include directories for the pixie c files
@@ -175,11 +179,7 @@ WAVEFORMSUBO     = WaveformAnalyzer.$(ObjSuf)
 ifdef USEROOT
 PIXIE = pixie_ldf_c_root$(ExeSuf)
 else
-ifdef ONLINE
-PIXIE = pixie_ldf_c_online$(ExeSuf)
-else
 PIXIE = pixie_ldf_c$(ExeSuf)
-endif
 endif
 
 #----- list of objects

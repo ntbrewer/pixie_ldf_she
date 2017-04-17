@@ -583,9 +583,9 @@ int DetectorDriver::Init(RawEvent& rawev)
         cout << "\t" << w.what() << endl;
     }
 
-    TimingInformation readFiles;
+    //TimingInformation readFiles;
     //readFiles.ReadTimingConstants();
-    readFiles.ReadTimingCalibration();
+    //readFiles.ReadTimingCalibration();
 
     rawev.GetCorrelator().Init(rawev);
 
@@ -622,10 +622,13 @@ int DetectorDriver::ProcessEvent(RawEvent& rawev){
                 continue;
 
             // check threshold and calibrate
+#ifdef PLOTRAWCAL
             PlotRaw((*it));
+#endif
             ThreshAndCal((*it), rawev);
+#ifdef PLOTRAWCAL
             PlotCal((*it));
-
+#endif
             // Do not activate places if saturated or pileup
             /*if ( (*it)->IsSaturated() || (*it)->IsPileup() )
                 continue;*/
@@ -729,6 +732,7 @@ void DetectorDriver::DeclarePlots()
                   << " - " << id.GetType()
                   << ":" << id.GetSubtype()
                   << " L" << id.GetLocation();
+#ifdef PLOTRAWCAL
             DeclareHistogram1D(D_RAW_ENERGY + i, SE,
                                ("RawE " + idstr.str()).c_str() );
             DeclareHistogram1D(D_FILTER_ENERGY  + i, SE,
@@ -739,11 +743,14 @@ void DetectorDriver::DeclarePlots()
                 DeclareHistogram1D(D_TIME + i, SE,
                                 ("Time " + idstr.str()).c_str() ); 
             DeclareHistogram1D(D_CAL_ENERGY + i, SE,
-                               ("CalE " + idstr.str()).c_str() ); 
+                               ("CalE " + idstr.str()).c_str() );
+#endif
         }
-	/*for (int j=0; j < 12; j++) {
+#ifdef PLOTRAWCAL
+	for (int j=0; j < 12; j++) {
              DeclareHistogram2D(DD_RAW_V_CAL+j,SC,SE,"Raw vs. Calibrated Energy");
-	}*/
+	}
+#endif
         // Now declare histograms present in all used analyzers and
         // processors
         for (vector<TraceAnalyzer *>::const_iterator it = vecAnalyzer.begin();
@@ -809,8 +816,9 @@ int DetectorDriver::ThreshAndCal(ChanEvent *chan, RawEvent& rawev)
         if (trace.HasValue("filterEnergy") ) {     
             if (trace.GetValue("filterEnergy") > 0) {
                 energy = trace.GetValue("filterEnergy");
+#ifdef PLOTRAWCAL
                 plot(D_FILTER_ENERGY + id, energy);
-
+#endif
                 /** These plots are used to determine (or check) the
                  * gain_match parameter to match the filter 
                  * and onboard amplitudes
@@ -919,17 +927,17 @@ int DetectorDriver::PlotCal(const ChanEvent *chan)
     
 
     /* Check Calibration */
-    /*int Offset=5;
+      int Offset=5;
       double energy = chan->GetEnergy() / ChanEvent::pixieEnergyContraction;
       double time = chan->GetTime();
       static double plottime=0; 
-      if (id <190) {
+/*      if (id <190) {
 	stringstream ss;
             //    ss << time << ' ' << time-plottime << ' ' << plottime <<' ';
 		ss << energy << ' ' << calEnergy << ' ' << id;
                 Messenger m;
                 m.run_message(ss.str());	
-      }
+      }*/
 
     
     if (id < 48 ) {
@@ -950,7 +958,8 @@ int DetectorDriver::PlotCal(const ChanEvent *chan)
     if (abs(time-plottime)<=1){
 	Offset += 6;
     }
-    plot(DD_RAW_V_CAL+Offset,energy,calEnergy);*/
+    plot(DD_RAW_V_CAL+Offset,energy,calEnergy);
+
     return 0;
 }
 

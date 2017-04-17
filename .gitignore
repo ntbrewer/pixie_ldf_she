@@ -1,0 +1,14 @@
+
+*.drr
+
+*.his
+
+*.list
+
+*.log
+
+chains\.txt
+
+*.o
+
+pixie_ldf_c

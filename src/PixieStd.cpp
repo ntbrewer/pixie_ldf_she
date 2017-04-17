@@ -810,8 +810,9 @@ void ScanList(vector<ChanEvent*> &eventList, RawEvent& rawev)
             messenger.warning(ss.str());
             ss.str("");
         }
+#ifdef PLOTRAWCAL
         driver->plot(D_TIME + id, dtimebin);
-
+#endif
         usedDetectors.insert((*modChan)[id].GetType());
         rawev.AddChan(*iEvent);
 
@@ -927,7 +928,9 @@ void HistoStats(unsigned int id, double diff, double clock, HistoPoints event)
         driver->plot(DD_RUNTIME_MSEC, remainNumMsecs, rowNumMsecs);
         //fill scalar spectrum (per second) 
         driver->plot(D_HIT_SPECTRUM, id);
+#ifdef PLOTRAWCAL
         driver->plot(D_SCALAR + id, runTimeSecs);
+#endif
     }
 }
 

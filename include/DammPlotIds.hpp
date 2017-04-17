@@ -99,11 +99,14 @@ namespace dammIds {
 
         /** Notice that there is a space for 300 channels,
          * one 13 modules crate has 208 channels */
+
         const int D_RAW_ENERGY = 0;
         const int D_FILTER_ENERGY = 300;
         const int D_SCALAR = 600;
         const int D_TIME = 900;
         const int D_CAL_ENERGY = 1200;
+
+	const int DD_RAW_V_CAL = 1512;
 
         const int D_HIT_SPECTRUM = 1500;
         const int D_SUBEVENT_GAP = 1501;
@@ -117,8 +120,7 @@ namespace dammIds {
         const int DD_RUNTIME_MSEC = 1509;
         const int D_NUMBER_OF_EVENTS = 1510;
         const int D_HAS_TRACE = 1511;
-//	const int DD_RAW_V_CAL = 1512;
-    
+
 
     }
 

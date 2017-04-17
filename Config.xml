@@ -488,5 +488,5 @@
     <GammaGates>
     </GammaGates>
 
-    <Notebook file="chains3.txt" mode="a"/>
+    <Notebook file="chains.txt" mode="a"/>
 </Configuration>
