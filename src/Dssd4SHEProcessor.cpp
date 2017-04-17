@@ -352,7 +352,8 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
                       (*itx)->GetChanID().GetLocation(),
                       (*itx)->IsSaturated(),
 		      0,	      
-		      (*itx)->GetTrace());
+		      (*itx)->GetTrace(),
+                      (*itx)->GetQdcVector());
         pair<StripEvent, bool> match(ev, false);
         xEventsTMatch.push_back(match);
 	
@@ -410,7 +411,8 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
                       (*ity)->GetChanID().GetLocation(),
                       (*ity)->IsSaturated(),
 		      0,
-		      (*ity)->GetTrace());
+		      (*ity)->GetTrace(),
+                      (*ity)->GetQdcVector());
         pair<StripEvent, bool> match(ev, false);
         yEventsTMatch.push_back(match);
 
@@ -696,13 +698,15 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
                            maxFront->GetChanID().GetLocation(),
                            maxFront->IsSaturated(),
                            0,
-			   maxFront->GetTrace());
+			   maxFront->GetTrace(),
+                           maxFront->GetQdcVector());
             StripEvent evb(maxBack->GetCalEnergy(), 
                            maxBack->GetTime(),
                            maxBack->GetChanID().GetLocation(),
                            maxBack->IsSaturated(),
                            0,
-			   maxBack->GetTrace());
+			   maxBack->GetTrace(),
+                           maxBack->GetQdcVector());
         xyEventsEMatch_.push_back(pair<StripEvent, StripEvent>(evf, evb));
     }
 

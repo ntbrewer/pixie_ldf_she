@@ -72,8 +72,8 @@ LINK.o    = $(FC) $(LDFLAGS)
 #------- define basic compiler flags, no warnings on code that is not my own
 FFLAGS   += -O3
 GCCFLAGS += -fPIC $(CINCLUDEDIRS) -Dnewreadout
-CXXFLAGS += -Wall -fPIC -fpermissive $(CINCLUDEDIRS) -Dnewreadout 
-
+CXXFLAGS += -Wall -fPIC $(CINCLUDEDIRS) -Dnewreadout 
+#-fpermissive
 ifdef ONLINE
 CXXFLAGS += -DONLINE
 endif

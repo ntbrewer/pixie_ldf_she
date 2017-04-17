@@ -9,6 +9,7 @@
 #include <utility>
 #include "EventProcessor.hpp"
 #include "RawEvent.hpp"
+#include "ChanEvent.hpp"
 #include "SheCorrelator.hpp"
 #include "Trace.hpp"
 
@@ -168,8 +169,11 @@ protected:
     bool pickEventType(SheEvent& event);
 
     struct StripEvent {
+        ChanEvent* ch;
+        int nQdcs = ch->GetNumQdcs();
         StripEvent() {
             Trace emptyTrace;
+            std::fill(qdcs,qdcs+nQdcs,0);
             t = 0;
             E = 0;
             pos = -1;
@@ -180,7 +184,7 @@ protected:
         }
 
         StripEvent(double energy, double time, int position,
-                   bool saturated, int pixel, Trace trace) {
+                   bool saturated, int pixel, Trace trace, pixie::word_t* qdcVector) {
             E = energy;
             t = time;
             pos = position;
@@ -188,6 +192,7 @@ protected:
 	    pileup = false;
 	    pxl = pixel;
 	    tr = trace;
+            qdcs = qdcVector;
         }
 
         double t;
@@ -197,6 +202,7 @@ protected:
         bool pileup;
 	int pxl;
 	Trace tr;
+        pixie::word_t* qdcs;
     };
 
     SheCorrelator correlator_;

@@ -36,7 +36,7 @@ public:
     virtual bool PreProcess(RawEvent &event);
     virtual bool Process(RawEvent &event);
     virtual void DeclarePlots(void);
-    static const double timeSpectraTimeResolution = 10e-3;
+    const double timeSpectraTimeResolution = 10e-3;
 
 protected:
     EventData BestGammaForBeta(double bTime);

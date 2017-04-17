@@ -116,7 +116,7 @@ class TimingInformation
     static void ReadTimingConstants(void);
     
  private:
-    static const double qdcCompression = 4.0;
+    static const int qdcCompression = 4;
 
     static std::map<std::string, double> constantsMap;
     static TimingCalMap calibrationMap;

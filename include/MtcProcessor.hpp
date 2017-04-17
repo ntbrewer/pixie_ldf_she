@@ -27,7 +27,7 @@ class MtcProcessor : public EventProcessor {
     bool double_start_;
 
     /** Upper limit in seconds for bad (double) start/stop event */
-    static const double doubleTimeLimit_ = 10e-6;
+    const double doubleTimeLimit_ = 10e-6;
 };
 
 #endif // __MTCPROCESSOR_HPP_

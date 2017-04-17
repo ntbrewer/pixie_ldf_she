@@ -17,8 +17,8 @@ public:
     virtual void DeclarePlots(void);
 protected:
     EventData BestBetaForNeutron(double nTime);
-    static double const cycleTimePlotResolution_ = 1e-3;
-    static double const diffTimePlotResolution_ = 1e-6;
+    const double cycleTimePlotResolution_ = 1e-3;
+    const double diffTimePlotResolution_ = 1e-6;
 };
 
 #endif // __HEN3PROCESSOR_H_

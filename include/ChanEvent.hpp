@@ -96,7 +96,8 @@ public:
     int GetID() const;                   /**< Get the channel id defined as
 					    pixie module # * 16 + channel number */
     unsigned long GetQdcValue(int i) const; /**< Get an onboard QDC value */
-
+    pixie::word_t* GetQdcVector() {return qdcValue;} /**< Get a reference to the qdc vector */
+    int GetNumQdcs() {return numQdcs;} /**< Get the number of Qdcs */
     ChanEvent();
     void ZeroVar();
 };

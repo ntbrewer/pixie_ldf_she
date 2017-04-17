@@ -20,7 +20,7 @@ public:
 
 private:
     /** Upper limit in seconds for bad (double) start/stop event */
-    static const double doubleTimeLimit_ = 1.0e-6;
+    const double doubleTimeLimit_ = 1.0e-6;
 };
 
 #endif // __BEAMLOGICPROCESSOR_HPP_
