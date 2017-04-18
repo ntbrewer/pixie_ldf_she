@@ -52,7 +52,7 @@ void ChanEvent::ZeroNums()
     chanNum     = -1;
     modNum      = -1;
     for (int i=0; i < numQdcs; i++) {
-	qdcValue[i] = pixie::U_DELIMITER;
+	qdcValue.push_back(pixie::U_DELIMITER);
     }
 }
 
@@ -61,7 +61,7 @@ unsigned long ChanEvent::GetQdcValue(int i) const
     if (i < 0 || i >= numQdcs) {
 	return pixie::U_DELIMITER;
     } 
-    return qdcValue[i];
+    return qdcValue.at(i);
 }
 
 //* Find the identifier in the map for the channel event */

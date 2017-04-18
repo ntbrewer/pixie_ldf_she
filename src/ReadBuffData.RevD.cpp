@@ -53,6 +53,7 @@
 #include "ChanEvent.hpp"
 #include "Trace.hpp"
 #include "StatsData.hpp"
+#include "signal.h"
 
 using pixie::word_t;
 using pixie::halfword_t;
@@ -153,11 +154,13 @@ int ReadBuffDataDF(word_t *buf, unsigned long *bufLen,
       }
 
       if (headerLength >= 12) {
+          cout << "has qdc" << endl;
+          raise(SIGINT);
 	  int offset = headerLength - 8;
 	  for (int i=0; i < currentEvt->numQdcs; i++) {
-	      currentEvt->qdcValue[i] = buf[offset + i];
+	      currentEvt->qdcValue.at(i) = buf[offset + i];
 	  }
-      }   
+      } 
 
       // one last sanity check
       if ( traceLength / 2 + headerLength != eventLength ) {

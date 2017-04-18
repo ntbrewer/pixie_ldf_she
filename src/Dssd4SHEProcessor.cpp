@@ -347,13 +347,13 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
         if (xid >48 && xid<65) { //Correct for delays by an offset 
 	    (*itx)->SetTime(xtime+XToffset1_);
 	}
+	if (((*itx)->GetQdcVector()).at(0) != 4294967295 ) cout << ((*itx)->GetQdcVector()).at(0) << "qdc"<< endl;
 	StripEvent ev((*itx)->GetCalEnergy(), 
                       (*itx)->GetTime(),
                       (*itx)->GetChanID().GetLocation(),
                       (*itx)->IsSaturated(),
 		      0,	      
-		      (*itx)->GetTrace(),
-                      (*itx)->GetQdcVector());
+		      (*itx)->GetTrace());//,                      (*itx)->GetQdcVector());
         pair<StripEvent, bool> match(ev, false);
         xEventsTMatch.push_back(match);
 	
@@ -411,8 +411,7 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
                       (*ity)->GetChanID().GetLocation(),
                       (*ity)->IsSaturated(),
 		      0,
-		      (*ity)->GetTrace(),
-                      (*ity)->GetQdcVector());
+		      (*ity)->GetTrace());//,                      (*ity)->GetQdcVector());
         pair<StripEvent, bool> match(ev, false);
         yEventsTMatch.push_back(match);
 
@@ -616,6 +615,9 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
         double yEnergy = (*it).second.E;
 	double xtime = (*it).first.t;
 	double ytime = (*it).second.t;
+	//std::vector<pixie::word_t> xQdcs = (*it).first.qdcs;
+	//std::vector<pixie::word_t> yQdcs = (*it).second.qdcs;
+	//cout << xQdcs.at(0) << " " << yQdcs.at(0) << endl;
         double newXEnergy = 0 , newYEnergy = 0;
 
         for (vector< pair<StripEvent, bool> >::iterator itx = xEventsTMatch.begin();
@@ -698,15 +700,13 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
                            maxFront->GetChanID().GetLocation(),
                            maxFront->IsSaturated(),
                            0,
-			   maxFront->GetTrace(),
-                           maxFront->GetQdcVector());
+			   maxFront->GetTrace());//,                           maxFront->GetQdcVector());
             StripEvent evb(maxBack->GetCalEnergy(), 
                            maxBack->GetTime(),
                            maxBack->GetChanID().GetLocation(),
                            maxBack->IsSaturated(),
                            0,
-			   maxBack->GetTrace(),
-                           maxBack->GetQdcVector());
+			   maxBack->GetTrace());//,                           maxBack->GetQdcVector());
         xyEventsEMatch_.push_back(pair<StripEvent, StripEvent>(evf, evb));
     }
 

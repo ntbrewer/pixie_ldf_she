@@ -39,7 +39,7 @@ private:
     pixie::word_t runTime1;    /**< Upper bits of run time */
     pixie::word_t runTime2;    /**< Higher bits of run time */
     static const int numQdcs = 8;     /**< Number of QDCs onboard */
-    pixie::word_t qdcValue[numQdcs];  /**< QDCs from onboard */
+    std::vector<pixie::word_t> qdcValue;  /**< QDCs from onboard */
 
     double time;               /**< Raw channel time, 64 bit from pixie16 channel event time */
     double eventTime;          /**< The event time recorded by Pixie */
@@ -56,6 +56,7 @@ private:
     friend int ReadBuffDataA(pixie::word_t *, unsigned long *, std::vector<ChanEvent *> &);
     friend int ReadBuffDataDF(pixie::word_t *, unsigned long *, std::vector<ChanEvent *> &);
 public:
+
     //static const double pixieEnergyContraction = 1.0; ///< energies from pixie16 are contracted by this number
     static double pixieEnergyContraction; ///< energies from pixie16 are contracted by this number
     void SetEnergy(double a)    {energy = a;}    /**< Set the raw energy in case we want
@@ -86,18 +87,14 @@ public:
     {return runTime1;}    /**< Return the middle bits of run time */
     unsigned long GetRunTime2() const
     {return runTime2;}    /**< Return the higher bits of run time */
-    bool IsPileup() const {
-	return pileupBit;
-    }
-    bool IsSaturated() const { /**< Return whether the trace is saturated */
-	return saturatedBit;
-    }
+    bool IsPileup() const {return pileupBit;}
+    bool IsSaturated() const { return saturatedBit;}/**< Return whether the trace is saturated */
     const Identifier& GetChanID() const; /**< Get the channel identifier */
     int GetID() const;                   /**< Get the channel id defined as
 					    pixie module # * 16 + channel number */
     unsigned long GetQdcValue(int i) const; /**< Get an onboard QDC value */
-    pixie::word_t* GetQdcVector() {return qdcValue;} /**< Get a reference to the qdc vector */
-    int GetNumQdcs() {return numQdcs;} /**< Get the number of Qdcs */
+    const std::vector<pixie::word_t>& GetQdcVector() const {return qdcValue;} /**< Get a reference to the qdc vector */
+    int GetNumQdcs() const {return numQdcs;} /**< Get the number of Qdcs */
     ChanEvent();
     void ZeroVar();
 };

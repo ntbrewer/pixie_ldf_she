@@ -306,7 +306,7 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
         histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1S,fissionE/100.,(fissionTime-VRecoilTime)*1.0e4);
         histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_10MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e7);
 	histo.Plot(dammIds::dssd4she::DD_RECOIL_ENERGY_V_SFE,fissionE/100.,VRecoilE/10.);        
-        cout << fissionTime-VRecoilTime << endl;
+        //cout << fissionTime-VRecoilTime << endl;
 //	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
         //cout << mwpcTime <<endl;
 	/*Event in sf plot*/
