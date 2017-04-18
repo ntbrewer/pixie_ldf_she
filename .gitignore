@@ -12,3 +12,7 @@ chains\.txt
 *.o
 
 pixie_ldf_c
+
+*.txt
+
+LDF
