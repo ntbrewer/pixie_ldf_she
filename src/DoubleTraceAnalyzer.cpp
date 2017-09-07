@@ -27,6 +27,7 @@ using namespace std;
 
 int DoubleTraceAnalyzer::numDoubleTraces = 0;
 int DoubleTraceAnalyzer::numDoubleTracesCut = 0;
+int DoubleTraceAnalyzer::numRejectTraces =0;
 /**
  * Set default values for time and energy
  */
@@ -56,7 +57,7 @@ void DoubleTraceAnalyzer::DeclarePlots()
     TraceFilterer::DeclarePlots();
 
     const int energyBins = SE;
-    const int energyBins2 = SA;
+    const int energyBins2 = SB;
     const int timeBins = SA;
     const int traceBins = dammIds::trace::traceBins;
 
@@ -67,12 +68,16 @@ void DoubleTraceAnalyzer::DeclarePlots()
     sample_trace.DeclareHistogram1D(D_ENERGY2_E1CUT, energyBins, "E2 from traces, when E1 > 5 Mev");
     sample_trace.DeclareHistogram2D(DD_DOUBLE_TRACE, traceBins, numTraces,
                                     "Double traces");
+    sample_trace.DeclareHistogram2D(DD_REJECT_DOUBLE_TRACE, traceBins, numTraces,
+                                    "Rejected traces based on num pulse");
     sample_trace.DeclareHistogram2D(DD_DOUBLE_TRACE_E1CUT, traceBins, numTraces,
                                     "Double traces, when E1 > 5MeV");
-    sample_trace.DeclareHistogram2D(DD_ENERGY2__TDIFF, energyBins, timeBins,
+    sample_trace.DeclareHistogram2D(DD_ENERGY2__TDIFF, energyBins2, timeBins,
                                     "E2 vs DT");
-    sample_trace.DeclareHistogram2D(DD_ENERGY2__ENERGY1, energyBins,
-                                    energyBins, "E2 vs E1");
+    sample_trace.DeclareHistogram2D(DD_ENERGY1__TDIFF, energyBins2, timeBins,
+                                    "E1 vs DT");
+    sample_trace.DeclareHistogram2D(DD_ENERGY2__ENERGY1, energyBins2,
+                                    energyBins2, "E2/1000 vs E1/1000");
 
     sample_trace.DeclareHistogram2D(DD_TRIPLE_TRACE, traceBins, 
                                     numTraces, "Interesting triple traces");
@@ -80,8 +85,11 @@ void DoubleTraceAnalyzer::DeclarePlots()
                                 numTraces, "Interesting traces (fast filter)");
     sample_trace.DeclareHistogram2D(DD_TRIPLE_TRACE_FILTER2, traceBins,
                             numTraces, "Interesting traces (energy filter)");
-    sample_trace.DeclareHistogram2D(DD_TRIPLE_TRACE_FILTER3, traceBins,
+    if (useThirdFilter) 
+    {                           
+        sample_trace.DeclareHistogram2D(DD_TRIPLE_TRACE_FILTER3, traceBins,
                                 numTraces, "Interesting traces (3rd filter)");
+    }
 }
 
 /**
@@ -118,7 +126,7 @@ void DoubleTraceAnalyzer::Analyze(Trace &trace,
         vector<PulseInfo> pulseVec;
         // put the original pulse in the vector
         pulseVec.push_back(pulse);
-        const size_t pulseLimit = 50; // maximum number of pulses to find
+        
 
         while (iThr < iHigh) {
             // find the trailing edge (use rise samples?)
@@ -132,24 +140,40 @@ void DoubleTraceAnalyzer::Analyze(Trace &trace,
                 pulseVec.push_back(pulse);
                 iThr = fastFilter.begin() + pulse.time;
             } else break;
-            if (pulseVec.size() > pulseLimit) {
 
-                stringstream ss;
-                ss << "Too many pulses, limit = " 
-                   << pulseLimit << ", breaking out.";
-                m.warning(ss.str());
-
-                EndAnalyze(); // update timing
-                return;
-            }
         } // while searching for multiple traces
         
         trace.SetValue("numPulses", (int)pulseVec.size());
-
-        // now plot stuff
+        // now plot stuff        
         if ( pulseVec.size() > 1 ) {
             using namespace dammIds::trace::doubletraceanalyzer;
 
+            const size_t pulseLimit = 5; // maximum number of pulses to find
+            if (pulseVec.size() > pulseLimit) {
+
+                /*stringstream ss;
+                ss << "Too many pulses, limit = " 
+                   << pulseLimit << ", breaking out.";
+                m.warning(ss.str());*/
+                trace.Plot(DD_REJECT_DOUBLE_TRACE,numRejectTraces);
+                numRejectTraces++;
+        
+                EndAnalyze(); // update timing
+                return;
+            }
+            if (pulseVec.size() > 1) {
+                /*cout << pulseVec[0].time << " t1 " << pulseVec[1].time << " t2 " ;
+                cout << pulseVec[2].time << " t3 " << pulseVec.size() << " s " << numRejectTraces << endl;*/
+                double dt = (pulseVec[1].time - pulseVec[0].time);
+                if (abs(dt) < 10.)
+                {
+                    trace.Plot(DD_REJECT_DOUBLE_TRACE,numRejectTraces);
+                    numRejectTraces++;
+        
+                    EndAnalyze(); // update timing
+                    return;
+                }
+            }
             // fill the trace info
             // first pulse info is set in TraceFilterer
             for (Trace::size_type i=1; i < pulseVec.size(); i++) {
@@ -165,21 +189,28 @@ void DoubleTraceAnalyzer::Analyze(Trace &trace,
             // plot the double pulse stuff
             trace.Plot(DD_DOUBLE_TRACE,numDoubleTraces);
 
-	    if (pulseVec[0].energy > 4000) {
-                trace.plot(D_ENERGY2_E1CUT, pulseVec[1].energy);
+	    if (pulseVec[0].energy > 5000. || pulseVec[1].energy > 50000.) {
+                trace.plot(D_ENERGY2_E1CUT, pulseVec[1].energy/100.);
 		trace.Plot(DD_DOUBLE_TRACE_E1CUT,numDoubleTracesCut);
 		numDoubleTracesCut++;
 	    } 
 
-            if (pulseVec.size() > 2) {
+            if (pulseVec.size() > 2  && pulseVec.size()<10) { //&& pulseVec.size() < pulseLimit?
                 static int numTripleTraces = 0;
+                if (numTripleTraces == 82) 
+                {
 
-                //stringstream ss;
-                //ss << "Found triple trace " << numTripleTraces 
-                //   << ", num pulses = " << pulseVec.size()
-                //   << ", sigma baseline = " << trace.GetValue("sigmaBaseline");
-                //m.run_message(ss.str());
-
+                stringstream ss;
+                ss << "Found triple trace " << numTripleTraces 
+                   << ", num pulses = " << pulseVec.size();
+                   for (int i =0; i<= pulseVec.size(); i++) 
+                   {
+                     ss << pulseVec[i].energy << " ";
+                   }
+                   ss << ", sigma baseline = " << trace.GetValue("sigmaBaseline");
+                m.run_message(ss.str());
+                }
+                //if (numTripleTraces <20) cout << numTripleTraces << " " << pulseVec.size() << endl;
                 trace.Plot(DD_TRIPLE_TRACE, numTripleTraces);
                 fastFilter.ScalePlot(DD_TRIPLE_TRACE_FILTER1, numTripleTraces,
                                     fastParms.GetRiseSamples());
@@ -188,14 +219,17 @@ void DoubleTraceAnalyzer::Analyze(Trace &trace,
                 if (useThirdFilter)
                     thirdFilter.ScalePlot(DD_TRIPLE_TRACE_FILTER3,
                                 numTripleTraces, thirdParms.GetRiseSamples());
-                    numTripleTraces++;
+                
+                numTripleTraces++;
             }
 
             trace.plot(D_ENERGY2, pulseVec[1].energy);
+            trace.plot(DD_ENERGY1__TDIFF, 
+                pulseVec[0].energy/100, pulseVec[1].time - pulseVec[0].time);
             trace.plot(DD_ENERGY2__TDIFF, 
-                pulseVec[1].energy, pulseVec[1].time - pulseVec[0].time);
+                pulseVec[1].energy/100, pulseVec[1].time - pulseVec[0].time);
             trace.plot(DD_ENERGY2__ENERGY1, 
-                pulseVec[1].energy, pulseVec[0].energy);
+                pulseVec[1].energy/100, pulseVec[0].energy/100);
 
             numDoubleTraces++;
         } // if found double trace

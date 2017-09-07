@@ -21,7 +21,7 @@ HHIRF_GFORTRAN = 1
 
 #These will set the analysis used on the waveforms
 #Uncomment this line to use the Pulse Fitting routine
-PULSEFIT = 1
+#PULSEFIT = 1
 #Uncomment this line to use the cfd
 #DCFD = 1
 
@@ -37,8 +37,9 @@ vpath %.o obj/
 
 #DIRA2=/usr/hhirf-intel64  //at JINR
 #DIRB= /usr/acq2/lib
-HHIRF_DIR = /usr/hhirf
-ACQ2_LIBDIR = /usr/hhirf
+#HHIRF_DIR=/usr/hhirf-upak //testing
+HHIRF_DIR = /usr/hhirf-upak
+ACQ2_LIBDIR = /usr/hhirf-upak
 
 LIBS = $(HHIRF_DIR)/scanorlib.a $(HHIRF_DIR)/orphlib.a\
        $(ACQ2_LIBDIR)/acqlib.a  $(ACQ2_LIBDIR)/ipclib.a
@@ -175,7 +176,7 @@ VANDLEROOTO      = VandleROOT.$(ObjSuf)
 WALKCORRECTORO   = WalkCorrector.$(ObjSuf)
 WAVEFORMSUBO     = WaveformAnalyzer.$(ObjSuf)
 WAVEFORMSUBO     = WaveformAnalyzer.$(ObjSuf)
-#FITTINGANALYZERO = FittingAnalyzer.$(ObjSuf)
+FITTINGANALYZERO = FittingAnalyzer.$(ObjSuf)
 ifdef USEROOT
 PIXIE = pixie_ldf_c_root$(ExeSuf)
 else
@@ -251,7 +252,7 @@ $(WALKCORRECTORO)\
 $(WAVEFORMSUBO)\
 $(WAVEFORMSUBO) \
 $(CFDANALYZERO)  \
-#$(FITTINGANALYZERO) \
+$(FITTINGANALYZERO) \
 
 ifdef USEROOT
 CXX_OBJS  += $(ROOTPROCESSORO) $(VANDLEROOTO) $(SCINTROOTO)

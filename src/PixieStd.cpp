@@ -889,8 +889,6 @@ void HistoStats(unsigned int id, double diff, double clock, HistoPoints event)
             } else if (bufLength != 0.){
                 //plot time between buffers as a function
                 //of time - dead time spectrum	    
-                // deadTime += (clock - bufEnd)*pixie::clockInSeconds;
-                // plot(DD_DEAD_TIME_CUMUL,remainNumSecs,rownum,int(deadTime/runTimeSecs));	    	    
                 driver->plot(dammIds::raw::DD_BUFFER_START_TIME, remainNumSecs,rowNumSecs, (clock-bufEnd)/bufLength*1000.);	    
             }
             break;

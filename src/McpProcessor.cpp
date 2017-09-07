@@ -49,8 +49,8 @@ void McpProcessor::DeclarePlots(void)
 
   DeclareHistogram1D(D_POSX, posBins, "MWPC Time Difference");
   DeclareHistogram1D(D_POSY, posBins, "Cathode");
-  DeclareHistogram2D(DD_POSXY, posBins, SA, "(Energy MPC2)/2 vs. Time Diff (dT-1500)/2");
-  DeclareHistogram2D(DD_XE_YE, posBins2D, posBins2D, "Energy 1/5 vs. En 2/5");
+  DeclareHistogram2D(DD_POSXY, posBins2D, SA, "(Energy MPC2)/100 vs. Time Diff (dT-1500)/2");
+  DeclareHistogram2D(DD_XE_YE, posBins2D, posBins2D, "Energy_1/5 vs. Energy_2/5");
   DeclareHistogram1D(D_AMP1, posBins, "MWPC 1 Amplitude");
   DeclareHistogram1D(D_AMP2, posBins, "MWPC 2 Amplitude");
 }
@@ -134,7 +134,7 @@ bool McpProcessor::Process(RawEvent &event)
 //    data.raw[1]=data.raw[1]/5.;
     plot(D_POSX, tDiff);
     plot(D_POSY, Cathode);
-    plot(DD_POSXY,data.raw[1]/2,(tDiff-1500)/2);
+    plot(DD_POSXY,data.raw[1]/100,(tDiff-1500)/2);
     plot(D_AMP1, data.raw[0]/2);
     plot(D_AMP2, data.raw[1]/2);
     plot(DD_XE_YE, data.raw[0]/5,data.raw[1]/5);

@@ -96,16 +96,19 @@ namespace dammIds {
 	/** Plotting Pixel Correlated events **/
 	const int DD_CHAIN_ALPHA_V_ALPHA = 70;
 	const int DD_CHAINS_ENERGY_V_TIME = 71;	
-	const int DD_TOF_A_EVENT = 72;
-	const int DD_MWPC_ENERGY_A_EVENT = 73;
+	const int DD_CHAINS_ENERGY_V_ALPHA_T = 72;	
+	const int DD_TOF_A_EVENT = 73;
+	const int DD_MWPC_ENERGY_A_EVENT = 74;
 
-	const int DD_TOF_SF_EVENT = 74;
-	const int DD_MWPC_ENERGY_SF_EVENT =75;
+	const int DD_TOF_SF_EVENT = 75;
+	const int DD_MWPC_ENERGY_SF_EVENT =76;
 	
-	const int DD_OTHER_ALPHA_V_ALPHA = 76;
+	const int DD_CHAIN_NUM_ALPHA = 77;
+	const int DD_CHAIN_NUM_FISSION = 78;
+	/*const int DD_OTHER_ALPHA_V_ALPHA = 76;
 	const int DD_OTHER_ENERGY_V_TIME = 77;	
 	const int DD_TOF_O_EVENT = 78;	
-	const int DD_MWPC_ENERGY_O_EVENT =79;
+	const int DD_MWPC_ENERGY_O_EVENT =79;*/
 
         const int D_TOF_HEAVY = 80;
 	const int D_TOF_LIGHT = 81;
@@ -119,8 +122,6 @@ namespace dammIds {
         const int DD_EVT_X_BAD_MATCH = 88;
 	const int DD_MWPC_ENERGY_V_SFE =89;
 	
-	//const int DD_CHAIN_NUM_ALPHA = 71;
-	//const int DD_CHAIN_NUM_FISSION = 75;
 	const int DD_TRACES_DECAY_CORR_X = 100; 
 	const int DD_TRACES_DECAY_CORR_Y = 101;
         const int DD_TRACES_DECAY_CORR_E_V_NX = 102;	
@@ -129,8 +130,12 @@ namespace dammIds {
         const int DD_TRACES_DECAY_CORR_POS_V_NY = 105;	
         
         const int DD_CHAINS_ENERGY_V_DTIME_1S = 106;
-        const int DD_CHAINS_ENERGY_V_DTIME_10MS = 107;
+        const int DD_CHAINS_ENERGY_V_DTIME_1MS = 107;
         const int DD_RECOIL_ENERGY_V_SFE = 108;
+      	const int DD_TOF_V_ENERGY_MWPC_OR_VETO =109;
+      	const int DD_TOF_V_ENERGY_IMPLANT =110;
+        const int DD_TOF_V_X_POSITION =111;
+       	const int DD_TOF_V_Y_POSITION =112;
 /*	const int D_TRACES_DECAY_CORR_GATE1_X = 101; 
 	const int D_TRACES_DECAY_CORR_GATE2_X = 102; 
 	const int D_TRACES_DECAY_CORR_GATE3_X = 103; 

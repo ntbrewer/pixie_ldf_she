@@ -150,18 +150,23 @@ namespace dammIds {
     namespace trace {
         const int OFFSET = 1000;
         const int RANGE = 150;
-        const int traceBins = SC;
+        const int traceBins = SA;
 
         namespace tracefilterer {
             const int DD_TRACE = 0;
             const int DD_FILTER1 = 1;
             const int DD_FILTER2 = 2;
             const int DD_FILTER3 = 3;
-            const int DD_AVERAGE_TRACE = 4;
-            const int DD_REJECTED_TRACE = 5;
-            const int DD_ENERGY_BOARD_FILTER = 6;
-            const int D_RATIO_BOARD_FILTER = 7;
-            const int D_ENERGY1 = 8;
+            //const int DD_AVERAGE_TRACE = 4;
+            const int DD_REJECTED_TRACE = 4;
+            const int DD_ENERGY_BOARD_FILTER = 5;
+            const int D_RATIO_BOARD_FILTER = 6;
+            const int D_ENERGY1 = 7;
+            const int DD_BIG_TRACE = 8;
+	    const int DD_TRACE1 = 9;
+	    const int DD_TRACE2 = 10;
+	    const int DD_TRACE3 = 11;
+	    const int DD_TRACE4 = 12;
            // const int D_HAS_REJECT = 9;
         }
 
@@ -169,13 +174,15 @@ namespace dammIds {
             const int D_ENERGY2 = 16;	
 	    const int D_ENERGY2_E1CUT = 17;	
             const int DD_DOUBLE_TRACE_E1CUT = 18;
-            const int DD_DOUBLE_TRACE = 20;
+            const int DD_DOUBLE_TRACE = 19;
+            const int DD_ENERGY1__TDIFF = 20;
             const int DD_ENERGY2__TDIFF = 21;
             const int DD_ENERGY2__ENERGY1 = 22;
             const int DD_TRIPLE_TRACE = 30;
             const int DD_TRIPLE_TRACE_FILTER1 = 31;
             const int DD_TRIPLE_TRACE_FILTER2 = 32;
             const int DD_TRIPLE_TRACE_FILTER3 = 33;
+            const int DD_REJECT_DOUBLE_TRACE = 34;
         }
 
         namespace waveformanalyzer {
@@ -187,7 +194,7 @@ namespace dammIds {
         
         // 1D-traces from the extracter
         namespace extracter {
-            const int maxSingleTraces = 50;
+            const int maxSingleTraces = 1;
             const int D_TRACE = 50;
         }
     } 

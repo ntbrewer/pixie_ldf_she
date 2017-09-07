@@ -217,6 +217,7 @@ void TimingInformation::ReadTimingConstants(void)
 	    if (isdigit(readConstants.peek())) {
 		readConstants >> value  >> name;		    
 		constantsMap.insert(make_pair(name, value));
+	//	cout << "Timing Constants: name= " << name << " value= " << value << endl; 
 	    } else{
 		readConstants.ignore(1000, '\n');
 	    }

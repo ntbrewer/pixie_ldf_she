@@ -128,6 +128,11 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
         pixels_[x][y].clear();
         return false;
     }
+    /*if (chain_size > 8) {
+        pixels_[x][y].clear();
+        return false;
+    } */
+
     int alphas = 0;
     double alphaE[8]={0};
     double alphaTime[8]={0};
@@ -136,7 +141,7 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
     static double mwpcTime, mwpcEnergy;//mwpcTime -> TOF
     int interest=0;
     static int ctra=0 , ctrsf=0, ctro=0;
-    int l=0; //ittr;
+    int l=0, ittr;
     stringstream ss;
 
     time_t wallTime = DetectorDriver::get()->GetWallTime(first.get_time());
@@ -192,10 +197,10 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
            ss << endl;
 	}
 	
-	if (alphas >= 2 && alphaE[1] > 9000 && l==0 && (alphaTime[1]-VRecoilTime) > 0 && (alphaTime[1]-VRecoilTime) < 0.1 && fissionE==0){//In units of s    
+	if (alphas >= 2 && alphaE[1] > 7000 && l==0 && (alphaTime[1]-VRecoilTime) > 0 && (alphaTime[1]-VRecoilTime) < 1. && fissionE==0){//In units of s    
 	   interest=1;
 	   l++;
-	} else if (fissionE>0 && (fissionTime - VRecoilTime) <270000 && alphas >1 && (alphaTime[1]-VRecoilTime) < 0.5 ) {
+	} else if (fissionE>0 && (fissionTime - VRecoilTime) <270000 && alphas >1 && (alphaTime[1]-VRecoilTime) < 1. ) {
 	   interest=2;
 	} else if (fissionE > 0 && alphas==0 && (fissionTime - VRecoilTime)<1)  { 
 	   interest=3;
@@ -210,32 +215,35 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
     if (interest>0 && interest <3) {
 	Notebook::get()->report(ss.str());
     }
-    if (interest==3 && fissionE > 50000 ) {
+    if (interest==3) {
+        //cout << '3' << endl;
         Notebook::get()->report(ss.str());
     }
     if (interest==1){
         //cout << "INTERESTING alpha!!" << endl;
 	/* Event vs. Number for Recoil */
-        /*ittr =0;
+        ittr =0;
         while(ittr < 2 ) { 
 	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,VRecoilE/10,ctra);
 	    ittr++; 
-	}*/
+	}
 	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
 	/*Event in chain plots*/
+	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_ALPHA_T,(log10(alphaTime[1]-VRecoilTime)+10)*100,alphaE[1]/10);
 	for (int i=1; i!=alphas; ++i) {//((alphaE[i]>0) & ((alphaTime[i]-VRecoilTime)<=100)){
 	 
 	    
      	    histo.Plot(dammIds::dssd4she::DD_CHAIN_ALPHA_V_ALPHA, alphaE[1]/10 , alphaE[i+1]/10);
  	    histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(alphaTime[i]-VRecoilTime)+10)*100,alphaE[i]/10);
-	   
+ 	    histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_ALPHA_T,(log10(alphaTime[i+1]-alphaTime[i])+10)*100,alphaE[i+1]/10);
+	    
 
 	   /*Event in chain vs. Number plots*/
-	   /*ittr =0;
+	   ittr =0;
 	   while (ittr <= (alphaTime[i]-VRecoilTime)*1e6 && ittr <8000) {
 		histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,alphaE[i]/10,ctra);
 		ittr++;
-	   }*/
+	   }
 	}
 
 	/*MWPC Plots*/
@@ -254,28 +262,30 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
 	/* Event vs. Number plots */
 	/*Recoil*/
 	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
-	/*ittr=0;
+	ittr=0;
         while(ittr < 2 ) { 
 	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,VRecoilE/10,ctra);
 	    ittr++; 
-	}*/
+	}
 	/*Fission*/
-	/*ittr=0;
-	while (ittr < (fissionTime - VRecoilTime) ) {
+	ittr=0;
+	while (ittr < (fissionTime - VRecoilTime) && ittr < 8000) {
 	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,fissionE/100+1500,ctra);
 	    ittr++;
-	}*/
+	}
 	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
 	/*Event in chain plots*/
-	for (int j=1; j!=alphas; ++j) {
+ 	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_ALPHA_T,(log10(alphaTime[1]-VRecoilTime)+10)*100,alphaE[1]/10);
+ 	for (int j=1; j!=alphas; ++j) {
     	    histo.Plot(dammIds::dssd4she::DD_CHAIN_ALPHA_V_ALPHA, alphaE[1]/10 , alphaE[j+1]/10);
 	    histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(alphaTime[j]-VRecoilTime)+10)*100,alphaE[j]/10);
+ 	    histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_ALPHA_T,(log10(alphaTime[j+1]-alphaTime[j])+10)*100,alphaE[j+1]/10);
 	   /*Event in chain vs. Number plots*/
-	   /* ittr=0;
-	    while (ittr <= (alphaTime[i]-VRecoilTime)*1e6 && ittr <8000) {
-		histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,alphaE[i]/10,ctra);
+	    ittr=0;
+	    while (ittr <= (alphaTime[j]-VRecoilTime)*1e6 && ittr <8000) {
+		histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_ALPHA,alphaE[j]/10,ctra);
 		ittr++;
-	    }*/
+	    }
 
 	}
 
@@ -289,55 +299,55 @@ bool SheCorrelator::flush_chain(int x, int y, Plots& histo){
     if (interest==3)  {
 	/* Event vs. Number plots */
 	/*Recoil*/ 
-	/*ittr =0;
+	ittr =0;
         while(ittr < 2 ) { 
-	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_FISSION,VRecoilE/10,ctr);
+	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_FISSION,VRecoilE/10,ctrsf);
 	    ittr++; 
-	}*/
+	}
 	/*Fission*/
-	/*ittr =0;
-	while (ittr < (fissionTime - VRecoilTime)*1e6 ) {
-	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_FISSION,fissionE/200,ctr);
+	ittr =0;
+	while (ittr < (fissionTime - VRecoilTime)*1e6 && ittr < 8000) {
+	    histo.Plot(dammIds::dssd4she::DD_CHAIN_NUM_FISSION,fissionE/200,ctrsf);
 	    ittr++;
-	}*/
+	}
 	//plot SF context plots here. 
-        // I-SF dts for <1s in .1 ms (10k) and <10ms in 1 us units (10k).
+        // I-SF dts for <1s in .1 ms (10k) and <1ms in 100 ns units (10k).
         //SF E in E/100 VRecoilE in E/10
         histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1S,fissionE/100.,(fissionTime-VRecoilTime)*1.0e4);
-        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_10MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e7);
+        histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_DTIME_1MS,fissionE/100.,(fissionTime-VRecoilTime)*1.0e7);
 	histo.Plot(dammIds::dssd4she::DD_RECOIL_ENERGY_V_SFE,fissionE/100.,VRecoilE/10.);        
         //cout << fissionTime-VRecoilTime << endl;
-//	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
+	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,10,VRecoilE/10);
         //cout << mwpcTime <<endl;
 	/*Event in sf plot*/
-//	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
+	histo.Plot(dammIds::dssd4she::DD_CHAINS_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
 	/*MWPC Plots*/
-//        histo.Plot(dammIds::dssd4she::DD_TOF_SF_EVENT,mwpcTime,ctrsf);       
-//	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_SF_EVENT,mwpcEnergy,ctrsf);
-//	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_V_SFE,fissionE/100,mwpcEnergy/10);
+        histo.Plot(dammIds::dssd4she::DD_TOF_SF_EVENT,mwpcTime,ctrsf);       
+	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_SF_EVENT,mwpcEnergy,ctrsf);
+	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_V_SFE,fissionE/100,mwpcEnergy/10);
     //cout << "SFE " << fissionE/100 << " MWPCE " << mwpcEnergy << endl;
-	//ctrsf++;
+	ctrsf++;
     }
 
-    if (interest==4 ) {
+   /* if (interest==4 ) {
 	//cout << "other alpha chains" << endl;
-	/*Fission*/
+	//Fission
 	histo.Plot(dammIds::dssd4she::DD_OTHER_ENERGY_V_TIME,10,VRecoilE/10);
 	if (fissionE>0) {
 	    histo.Plot(dammIds::dssd4she::DD_OTHER_ENERGY_V_TIME,(log10(fissionTime-VRecoilTime)+10)*100,fissionE/100+1500);
 	}
-	/*Event in chain plots*/
+	//Event in chain plots
 	for (int j=1; j!=alphas; ++j) {
     	    histo.Plot(dammIds::dssd4she::DD_OTHER_ALPHA_V_ALPHA, alphaE[1]/10 , alphaE[j+1]/10);
 	    histo.Plot(dammIds::dssd4she::DD_OTHER_ENERGY_V_TIME,(
 		log10(alphaTime[j]-VRecoilTime)+10)*100,alphaE[j]/10);
 	}
 
-	/*MWPC Plots*/
+	//MWPC Plots
 	histo.Plot(dammIds::dssd4she::DD_TOF_O_EVENT,mwpcTime,ctro);
 	histo.Plot(dammIds::dssd4she::DD_MWPC_ENERGY_O_EVENT,mwpcEnergy,ctro);
 	ctro++;
-    }
+    }*/
 
     pixels_[x][y].clear();
     
@@ -369,14 +379,25 @@ void SheCorrelator::human_event_info(SheEvent& event, stringstream& ss,
        << " " 
        << setprecision(0) << setw(12) << event.get_energy();
 
-	if (event.get_ratio()==0.0) {
+	if (abs(event.get_ratio() - 1.00) < 0.01) {
 	     ss  << " " << setprecision(3) << setw(13) ;
 	} else {
 	     ss  << " " << setprecision(2) << event.get_ratio() << " " << setprecision(3) << setw(8);
 	}
+    double dt = (event.get_time() - clockStart); //10ns 
+    if (dt < 1 || (dt < 1e9 && dt > 1e4))
+    {
+       ss << dt*1e-5 << "    ";
+    } else if (dt >= 1e9)
+    {
+       ss << (dt*1e-8)/60. << " min";
+    } else
+    {
+       ss << dt*1e-2 << " us ";
+    } 
 
-    ss << (event.get_time() - clockStart) * 1.0e-5  //ms
-       << " M" << event.get_mwpc() 
+    
+       ss << " M" << event.get_mwpc() 
        << "B" << event.get_beam() 
        << "V" << event.get_veto();
  	

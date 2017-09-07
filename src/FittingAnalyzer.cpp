@@ -56,27 +56,33 @@ FittingAnalyzer::FittingAnalyzer()
 void FittingAnalyzer::Analyze(Trace &trace, const string &detType, 
 			      const string &detSubtype)
 {
+	
     TraceAnalyzer::Analyze(trace, detType, detSubtype);
     if(trace.HasValue("saturation")) {
        EndAnalyze();
        return;
     }
-
+    //cout << "FA gets called." << endl; works
+    
     const double aveBaseline = trace.GetValue("baseline");
     const double sigmaBaseline = trace.GetValue("sigmaBaseline");
-    const double maxVal = trace.GetValue("maxval");
+    //const double maxVal = trace.GetValue("maxval");
 
-    const unsigned int maxPos = (unsigned int)trace.GetValue("maxpos");
+    const unsigned int maxPos = (unsigned int)trace.GetValue("filterTime");
+    const double maxVal = trace.at(maxPos+6); //hardcoded!!! changes based on filter. 
     const unsigned int waveformLow = 
 	(unsigned int)TimingInformation::GetConstant("waveformLow");
     const unsigned int waveformHigh = 
 	(unsigned int)TimingInformation::GetConstant("waveformHigh");
-
+/*    if (maxPos > 0 ) 
+    cout << maxPos << " " << waveformLow << " " << waveformHigh << " " << trace.size() << " " << sigmaBaseline << endl;*/
     if((maxPos < waveformLow) || (maxPos + waveformHigh >= trace.size()) ||
        (sigmaBaseline > 3)) {
        EndAnalyze();
        return;
     }
+    cout << maxPos << " " << maxVal << endl;
+//    cout << "FA gets called." << endl; 
 
     for(unsigned int i = (maxPos-waveformLow); 
 	i <= (maxPos+waveformHigh); i++) {
@@ -98,7 +104,7 @@ void FittingAnalyzer::Analyze(Trace &trace, const string &detType,
 	width = TimingInformation::GetConstant("widthDefault");
 	decay = TimingInformation::GetConstant("decayDefault");
     }
-    
+  //  cout << width << " " << decay << endl;  
     const gsl_multifit_fdfsolver_type *T;
     gsl_multifit_fdfsolver *s;
     int status;
@@ -135,6 +141,7 @@ void FittingAnalyzer::Analyze(Trace &trace, const string &detType,
     
     T = gsl_multifit_fdfsolver_lmsder;
     s = gsl_multifit_fdfsolver_alloc (T, sizeFit, numParams);
+    gsl_matrix *jac = gsl_matrix_alloc(sizeFit, numParams);//for gsl2
     gsl_multifit_fdfsolver_set (s, &f, &x.vector);
     
     for(unsigned int iter = 0; iter < 1000000; iter++) {
@@ -150,8 +157,8 @@ void FittingAnalyzer::Analyze(Trace &trace, const string &detType,
 	    break;
     }
 
-    gsl_multifit_covar (s->J, 0.0, covar);
-    
+    //gsl_multifit_covar (s->J, 0.0, covar);
+    gsl_multifit_covar( jac, 0.0, covar); //for gsl 2
     double chi = gsl_blas_dnrm2(s->f);
     double dof = sizeFit - numParams;
     double chisqPerDof = pow(chi, 2.0)/dof;
@@ -163,10 +170,10 @@ void FittingAnalyzer::Analyze(Trace &trace, const string &detType,
 
     gsl_multifit_fdfsolver_free (s);
     gsl_matrix_free (covar);
-
+    gsl_matrix_free (jac); //for gsl 2 
     trace.InsertValue("phase", fittedParameters.front()+maxPos);
     trace.InsertValue("walk", CalculateWalk(maxVal));
-
+    trace.SetValue("filterEnergy2" , fittedParameters.at(1) );
     trace.plot(DD_AMP, fittedParameters.at(1), trace.at(maxPos)-aveBaseline);
     trace.plot(D_PHASE, fittedParameters.at(0)*1000+1000);    
     trace.plot(D_CHISQPERDOF, chisqPerDof);

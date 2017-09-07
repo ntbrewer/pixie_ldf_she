@@ -27,7 +27,7 @@
 #include "TraceExtracter.hpp"
 #include "WaveformAnalyzer.hpp"
 #include "DetectorDriver.hpp"
-#include "Notebook.hpp"
+
 using namespace dammIds::dssd4she;
 using namespace std;
 
@@ -79,7 +79,7 @@ void Dssd4SHEProcessor::DeclarePlots(void)
 {
     
     const int energyBins = SE;
-    const int energyBins2 = SB;
+    const int energyBins2 = SC;
     const int xBins = S7;
     const int yBins = S6;
     const int timeBins = S8;
@@ -87,14 +87,14 @@ void Dssd4SHEProcessor::DeclarePlots(void)
     unsigned short numTraces = Globals::get()->numTraces();
 
     
-    DeclareHistogram2D(DD_TRACES_DECAY_CORR_X, traceBins, numTraces, "Traces correlated as a decay X");
+    /*DeclareHistogram2D(DD_TRACES_DECAY_CORR_X, traceBins, numTraces, "Traces correlated as a decay X");
     DeclareHistogram2D(DD_TRACES_DECAY_CORR_Y, traceBins, numTraces, "Traces correlated as a decay Y");
     DeclareHistogram2D(DD_TRACES_DECAY_CORR_E_V_NX, SD, numTraces, "Traces correlated as a decay X E vs N ");
     DeclareHistogram2D(DD_TRACES_DECAY_CORR_POS_V_NX, xBins, numTraces, "Traces correlated as a decay X POS vs N ");
     DeclareHistogram2D(DD_TRACES_DECAY_CORR_E_V_NY, SD, numTraces, "Traces correlated as a decay Y E vs N ");
     DeclareHistogram2D(DD_TRACES_DECAY_CORR_POS_V_NY, yBins, numTraces, "Traces correlated as a decay Y POS vs N ");
 
-    /*DeclareHistogram1D(D_TRACES_DECAY_CORR_GATE1_X, numTraces, "Traces correlated in X Gate 1");
+    DeclareHistogram1D(D_TRACES_DECAY_CORR_GATE1_X, numTraces, "Traces correlated in X Gate 1");
     DeclareHistogram1D(D_TRACES_DECAY_CORR_GATE2_X, numTraces, "Traces correlated in X Gate 2");
     DeclareHistogram1D(D_TRACES_DECAY_CORR_GATE3_X, numTraces, "Traces correlated in X Gate 3");
     DeclareHistogram1D(D_TRACES_DECAY_CORR_GATE1_Y, numTraces, "Traces correlated in Y Gate 1");
@@ -179,9 +179,9 @@ void Dssd4SHEProcessor::DeclarePlots(void)
     DeclareHistogram2D(DD_FRONTE__BACKE, energyBins2, energyBins2,
             "Front vs Back energy (calib / 100)");
     DeclareHistogram2D(DD_POS_X_VS_TRACE,
-		       traceBins, xBins, "DSSD Position vs X from Traces");
+		       traceBins, xBins, "DSSD X from Traces");
     DeclareHistogram2D(DD_POS_Y_VS_TRACE,
-		       traceBins, xBins, "DSSD Position vs Y from Traces");//Wrong Labels
+		       traceBins, xBins, "DSSD Y from Traces");
     DeclareHistogram2D(DD_POS_SI_VS_TRACE,
 		       traceBins, numTraces, "Si Box Traces");
     /** Check Gain match alpha region events **/
@@ -242,6 +242,8 @@ void Dssd4SHEProcessor::DeclarePlots(void)
 		       "DSSD Ty,Ex (1s/ch)(xkeV)");
     DeclareHistogram2D(DD_ENERGY_DECAY_TIME_GRANX + 8, energyBins, timeBins,
 		       "DSSD Ty,Ex (10s/ch)(xkeV)");
+    DeclareHistogram2D(DD_ENERGY_DECAY_TIME_GRANX + 9, SC , SA ,
+		       "DSSD Ty,E/100 (100ns/ch)(100 keV/ch)");
     /** Diagnostics **/ 
     DeclareHistogram2D(DD_ENERGY__POSX_T_MISSING,
 		       energyBins, xBins, "DSSD T missing X strips E vs. position");
@@ -259,40 +261,44 @@ void Dssd4SHEProcessor::DeclarePlots(void)
     /** Pixel Correlated Events **/    
     DeclareHistogram2D(DD_CHAINS_ENERGY_V_TIME,SB,SC,
 	    "Event Chains vs. Log of dT between Events");
-    DeclareHistogram2D(DD_OTHER_ENERGY_V_TIME,SB,SC,
-	    "Other Event Chains vs. Log of dT between");
-    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_1S, SB, SE,
+    DeclareHistogram2D(DD_CHAINS_ENERGY_V_ALPHA_T,SB,SC,
+	    "Event Chains vs. Log of dT between Alphas in Events");
+    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_1S, SC, SE,
 	    "dT(.1ms) <1s vs SF Energy/100");
-    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_10MS, SB, SE,
-	    "dT(100ns) <100 us vs SF Energy/100 ");
-    DeclareHistogram2D(DD_RECOIL_ENERGY_V_SFE, SB,SB,
+    DeclareHistogram2D(DD_CHAINS_ENERGY_V_DTIME_1MS, SC, SE,
+	    "dT(100ns) <1 ms vs SF Energy/100 ");
+    DeclareHistogram2D(DD_RECOIL_ENERGY_V_SFE, SC,SB,
     	    "Energy of the Recoil/10 vs SF Energy/100");
-/*    DeclareHistogram2D(DD_CHAIN_NUM_FISSION, SC, S9, 
-            "Event Number vs. Fission Chain Energy/20");
+    DeclareHistogram2D(DD_CHAIN_NUM_FISSION, SC, S9, 
+            "Event Number vs. Fission Chain Energy/200");
     DeclareHistogram2D(DD_CHAIN_NUM_ALPHA, SC, S9, 
-            "Event Number vs. Alpha Chain Energy/10");*/
+            "Event Number vs. Alpha Chain Energy/10");
     DeclareHistogram2D(DD_CHAIN_ALPHA_V_ALPHA, SC, SC,
 	    "First Alpha vs. Alpha Chain Energy/10");
-    DeclareHistogram2D(DD_OTHER_ALPHA_V_ALPHA, SC, SC,
-	    "First Alpha vs. Other Alpha Chain Energy/10");
     DeclareHistogram2D(DD_TOF_A_EVENT, SC, S9,
 	    "TOF vs. Event Number Alpha");
     DeclareHistogram2D(DD_TOF_SF_EVENT, SC, S9,
 	    "TOF vs. Event Number R-SF");
-    DeclareHistogram2D(DD_TOF_O_EVENT, SC, SA,
-	    "TOF vs. Event Number R-Other");
     DeclareHistogram2D(DD_MWPC_ENERGY_A_EVENT, SD, S9,
 	    "MWPC Energy vs. Event Number Alpha");
     DeclareHistogram2D(DD_MWPC_ENERGY_SF_EVENT, SD, S9,
 	    "MWPC Energy vs. Event Number R-SF"); 
     DeclareHistogram2D(DD_MWPC_ENERGY_V_SFE, SB, SB,
 	    "MWPC Energy/10 vs. SF Energy/100 R-SF"); 
-    DeclareHistogram2D(DD_MWPC_ENERGY_O_EVENT, SD, SA,
-	    "MWPC Energy vs. Event Number R-Other");    
     DeclareHistogram2D(DD_FRONT_V_ALPHA1, SE, xBins, 
   	    "Front Position vs. Alpha Energy 1 from interesting events in SheCorrelator chain");
     DeclareHistogram2D(DD_BACK_V_ALPHA1, SE, yBins, 
 	    "Back Position vs. Alpha Energy 1 from interesting events in SheCorrelator chain");	
+/*    DeclareHistogram2D(DD_OTHER_ENERGY_V_TIME,SB,SC,
+	    "Other Event Chains vs. Log of dT between");
+    DeclareHistogram2D(DD_OTHER_ALPHA_V_ALPHA, SC, SC,
+	    "First Alpha vs. Other Alpha Chain Energy/10");
+    DeclareHistogram2D(DD_MWPC_ENERGY_O_EVENT, SD, SA,
+	    "MWPC Energy vs. Event Number R-Other");    
+    DeclareHistogram2D(DD_TOF_O_EVENT, SC, SA,
+	    "TOF vs. Event Number R-Other");
+*/
+
     DeclareHistogram1D(D_TOF_HEAVY, SE,"Avg. TOF of Heavy Implants");
     DeclareHistogram1D(D_TOF_LIGHT, SE,"Avg. TOF of Light Particles"); 
     DeclareHistogram1D(D_TOF_UNK, SE,"Avg. TOF of 'Unknown' Particles"); 
@@ -304,14 +310,19 @@ void Dssd4SHEProcessor::DeclarePlots(void)
     DeclareHistogram2D(DD_ENERGY_YVX_BAD_MATCH,energyBins2,energyBins2, "Energy/100 Y vs X if x or y is poorly matched in energy"); 
     DeclareHistogram2D(DD_EVT_Y_BAD_MATCH,energyBins2 ,SB,"Energy/10 V FrontBack time if X is missing energy");
     DeclareHistogram2D(DD_EVT_X_BAD_MATCH,energyBins2 ,SB,"Energy/10 V FrontBack time if Y is missing energy");
-
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+0,SD,SC,"Raw Si vs Cal DSSD 1");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+1,SD,SB,"Raw Si vs Cal DSSD 2");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+2,SD,SB,"Raw Si vs Cal DSSD 3");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+3,SD,SB,"Raw Si vs Cal DSSD 4");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+4,SD,SB,"Raw Si vs Cal DSSD 5");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+5,SD,SB,"Raw Si vs Cal DSSD 6");
-    DeclareHistogram2D(DD_SI_RAW_EDSSD+6,SD,SC,"Raw Si vs Cal DSSD 0");
+    
+    DeclareHistogram2D(DD_TOF_V_ENERGY_MWPC_OR_VETO, SC, SC,"TOF VS Recoil Energy or Veto" );
+    DeclareHistogram2D(DD_TOF_V_ENERGY_IMPLANT, SC, SC,"TOF VS Recoil Energy" );
+    DeclareHistogram2D(DD_TOF_V_X_POSITION, xBins, SC,"TOF VS X ");
+    DeclareHistogram2D(DD_TOF_V_Y_POSITION, yBins, SC,"TOF VS Y ");
+    
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+0,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 1");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+1,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 2");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+2,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 3");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+3,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 4");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+4,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 5");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+5,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 6");
+    DeclareHistogram2D(DD_SI_RAW_EDSSD+6,energyBins2,SA,"Raw Si/100 vs Cal DSSD/100 0");
     
     
     
@@ -337,8 +348,13 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
     vector< pair<StripEvent, bool> > yEventsTMatch;
     StripEvent ev2x;
     StripEvent ev2y;
-    int numxTrace=0;
+    static int numxTrace=0;
 
+    /*DetectorDriver* driver = DetectorDriver::get();
+    time_t theTime;
+    stringstream sst;
+    sst.precision(15);
+    */
     for (vector<ChanEvent*>::iterator itx = xEvents.begin();
          itx != xEvents.end();
          ++itx) { //PreProcess traces in X
@@ -347,7 +363,7 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
         if (xid >48 && xid<65) { //Correct for delays by an offset 
 	    (*itx)->SetTime(xtime+XToffset1_);
 	}
-	if (((*itx)->GetQdcVector()).at(0) != 4294967295 ) cout << ((*itx)->GetQdcVector()).at(0) << "qdc"<< endl;
+	//if (((*itx)->GetQdcVector()).at(0) != 4294967295 ) cout << ((*itx)->GetQdcVector()).at(0) << "qdc"<< endl;
 	StripEvent ev((*itx)->GetCalEnergy(), 
                       (*itx)->GetTime(),
                       (*itx)->GetChanID().GetLocation(),
@@ -359,11 +375,12 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
 	
         Trace& trace = (*itx)->GetTrace();
         int pulses = trace.GetValue("numPulses");
-	if (pulses >= 0) {
-
+     
+	/*if (pulses > 1) {
+            //cout << " xTra " << ev.pos << " "<< pulses << " " << numxTrace;
 	    trace.Plot(DD_POS_X_VS_TRACE, numxTrace);
 	    numxTrace++;
-	}
+	}*/
         /** Handle additional pulses (no. 2, 3, ...) */
         
         for (int i = 1; i < pulses; ++i) {
@@ -374,27 +391,27 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
 
             ev.pileup = true;
 
-            
+
             ev2x.E = trace.GetValue(energyCalName.str());
             ev2x.t = (trace.GetValue(timeName.str()) - 
                      trace.GetValue("filterTime") + ev.t);
             ev2x.pos = ev.pos;
             ev2x.sat = false;
             ev2x.pileup = true;
-	    
+            //cout << " " << ev2x.E;	    
             pair<StripEvent, bool> match2(ev2x, false);
             xEventsTMatch.push_back(match2);
 	    
     
         }
-
+      	//if (pulses >= 0) cout << endl;
         /*theTime = driver -> GetWallTime(ev.t);
-        if ( abs(theTime-1484649104) < 1) {
+        if ( abs(theTime-1485954180) < 1) {
                  sst << 0 << " " << ev.E << " " << ev.t << " " << ev.pos << " " << ev.sat << endl;
          	 Notebook::get()->report(sst.str());
 	}*/
     }
-    int numyTrace=0;
+    static int numyTrace=0;
     for (vector<ChanEvent*>::iterator ity = yEvents.begin();
          ity != yEvents.end();
          ++ity) { //PreProcess traces in Y.
@@ -417,10 +434,12 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
 
         const Trace& trace = (*ity)->GetTrace();
         int pulses = trace.GetValue("numPulses");
-	if (pulses >=1) {
-	    trace.plot(DD_POS_Y_VS_TRACE, numyTrace);
-	    numyTrace++;
-	}
+
+	/*if (pulses >1) {
+            cout << " yTra " << ev.pos << " "<< pulses << " " << numxTrace << endl;
+	    trace.plot(DD_POS_Y_VS_TRACE, numxTrace);
+	    numxTrace++;
+	}*/
         for (int i = 1; i < pulses; ++i) {
             stringstream energyCalName;
             energyCalName << "filterEnergy" << i + 1 << "Cal";
@@ -448,8 +467,8 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
             }
         }
 
-        /* theTime = driver -> GetWallTime(ev.t);
-        if ( abs(theTime-1484649104) < 1) {
+        /*theTime = driver -> GetWallTime(ev.t);
+        if ( abs(theTime-1485954180) < 1) {
                  sst << 1 << " " << ev.E << " " << ev.t << " " << ev.pos << " " << ev.sat << endl;
          	 Notebook::get()->report(sst.str());
 	}*/
@@ -499,12 +518,12 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
  				
      	    }*/
 
-	    /*theTime = driver -> GetWallTime((*itx).first.t);
-	    if ( abs(theTime-1484649104) < 1) {
+	   /* theTime = driver -> GetWallTime((*itx).first.t);
+	    if ( abs(theTime-1485954180< 1)){
                  sst << 0 << " " << (*itx).first.E << " " << (*itx).first.t << " " << (*itx).first.pos << " " << (*itx).first.sat << endl;
                  sst << 1 << " " << (*ity).first.E << " " << (*ity).first.t << " " << (*ity).first.pos << " " << (*ity).first.sat << endl;
          	 Notebook::get()->report(sst.str());
-	    }
+	    }*//*
 	    energyXb=energyX;
 	    energyYb=energyY;
 	    Xbtime=xtime;
@@ -601,11 +620,8 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
         plot(DD_ENERGY__POSY_T_MISSING, ev2yE, ev2ypos);
     }
     
-    /*DetectorDriver* driver = DetectorDriver::get();
-    time_t theTime;
-    stringstream sst;
-    sst.precision(15);
-    */
+
+    
     for (vector< pair<StripEvent, StripEvent> >::iterator it =
         xyEventsTMatch_.begin();it != xyEventsTMatch_.end(); ++it) {
 
@@ -680,8 +696,13 @@ bool Dssd4SHEProcessor::PreProcess(RawEvent &event) {
            }
        }
 
-
-
+   /*
+    theTime = driver -> GetWallTime(ytime);
+	    if ( abs(theTime-1485954180) < 2) {
+                 sst << theTime << " " << yEnergy << " " << ytime << " " << yPosition << " " ;
+                 sst << xEnergy << " " << xtime << " " << xPosition << " " << (*it).first.pxl << " " << (*it).second.pxl << endl;
+         	 Notebook::get()->report(sst.str());
+	    }*/
     }
 
 
@@ -729,7 +750,7 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
         event.GetSummary("mcp:mcp", true)->GetList();
     int mwpc = event.GetSummary("mcp", true)->GetMult();
     bool hasBeam = TreeCorrelator::get()->place("Beam")->status();
-
+   
    plot(D_MWPC_MULTI, mwpc);
 
    
@@ -806,7 +827,7 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	}*/
 	/*consider first / last method)*/
 	double static mwpcTime;
-	double tof, MwpcE;
+	double tof=-1, MwpcE;
 	int k=1;
 	for (vector<ChanEvent*>::iterator itm = mwpcEvents.begin();
              itm != mwpcEvents.end(); ++itm) {
@@ -856,13 +877,13 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
                 bestSiTime = dt;
                 correlatedSide = *its;
             }
-            Trace& traceSi = (*its)->GetTrace();
+            /*Trace& traceSi = (*its)->GetTrace();
             if (!traceSi.empty()) {
                 for (unsigned int i=0; i < traceSi.size(); i++) {
                    histo.Plot(DD_POS_SI_VS_TRACE, i, numsTrace, traceSi.at(i));
                 }
    	        numsTrace++;
-   	    }
+   	    }*/
         }
 
         if (correlatedSide != 0) {
@@ -915,13 +936,13 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	}
         if (!hasVeto && !hasEscape && mwpc == 0) {
             plot(D_ENERGY_NO_VETO_NO_MWPC, yEnergy / 10.0);
-            if (!(*it).first.tr.empty() ) {
+            /*if (!(*it).first.tr.empty() ) {
 	        for (unsigned int j=0; j<(*it).first.tr.size(); j++) {
                     histo.Plot(DD_TRACES_DECAY_CORR_X, j, traceNum1, (*it).first.tr.at(j));
 		}
 		plot(DD_TRACES_DECAY_CORR_E_V_NX, xEnergy, traceNum1);
 		plot(DD_TRACES_DECAY_CORR_POS_V_NX, xPosition, traceNum1);
-	      	/*if (xEnergy <= 6350 && xEnergy >= 5800) {
+	      	if (xEnergy <= 6350 && xEnergy >= 5800) {
 		   for (int m=0; m<xPosition+1; m++) {
 		      if (xEnergy <= 5800 && xEnergy >= 5700 ) {
 			   plot(D_TRACES_DECAY_CORR_GATE1_X,traceNum1);
@@ -931,7 +952,7 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 			   plot(D_TRACES_DECAY_CORR_GATE3_X,traceNum1);
 		      }
 		   }
-		}*/
+		}
 	        
                 traceNum1++;
             } else if (!(*it).second.tr.empty()) {
@@ -940,7 +961,7 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 		}
 		plot(DD_TRACES_DECAY_CORR_E_V_NY, yEnergy, traceNum2);
 		plot(DD_TRACES_DECAY_CORR_POS_V_NY, yPosition, traceNum2);
-		/*if (yEnergy <= 6350 && yEnergy >= 5800) {
+		if (yEnergy <= 6350 && yEnergy >= 5800) {
 		   for (int m=0; m<yPosition+1; m++) {
 	              if (yEnergy <= 5800 && yEnergy >= 5700 ) {
 			   plot(D_TRACES_DECAY_CORR_GATE1_Y,traceNum2);
@@ -950,9 +971,9 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 			   plot(D_TRACES_DECAY_CORR_GATE3_Y,traceNum2);
 		      }
 		   }
-		}*/
+		}
 	        traceNum2++;                
-            }
+            }*/
 	}
         if (!hasVeto && !hasEscape) {
             plot(D_ENERGY_NO_SI_NO_VETO, yEnergy / 10.0);
@@ -962,9 +983,9 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
         double dssdEnergy = (xEnergy +yEnergy)/2;
         double DSRatio=escapeEnergy/dssdEnergy;
         
-	if (XYRatio>=0 && abs((XYRatio-1)/(XYRatio+1))>=0.01){ //Bad Match 
+	if (XYRatio>=0 && abs((XYRatio-1)/(XYRatio+1))>=0.05){ //Bad Match 
 	    double dtxy = (*it).first.t-(*it).second.t;
-	    plot(DD_ENERGY_YVX_BAD_MATCH,yEnergy/100,xEnergy/100);
+	    plot(DD_ENERGY_YVX_BAD_MATCH,xEnergy/100,yEnergy/100);
 	    plot(DD_EVT_Y_BAD_MATCH,yEnergy/10,dtxy+500);
     	plot(DD_EVT_X_BAD_MATCH,xEnergy/10,dtxy+500);
 	    if ( hasSat > 0)  {
@@ -985,7 +1006,7 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
         pickEventType(event);
 	
 	double eventE=event.get_energy();
-        plot(DD_EVENT_POSITION, xPosition, yPosition);    
+        plot(DD_EVENT_POSITION, xPosition, yPosition);    //Move all logic here to case/switch
     if (!event.get_beam() ) 
     {
         plot(D_ENERGY_ALL_BEAMSTOP, eventE/10);
@@ -995,8 +1016,15 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
 	if (eventE>=0) {
 	    plot(D_ENERGY_ALL, eventE/10);
 	}
+	if (mwpc==2 || hasVeto ) {
+	    if (!hasVeto) plot(DD_TOF_V_ENERGY_IMPLANT,eventE/10,event.get_mwpcTime()/10.);
+    	    plot(DD_TOF_V_ENERGY_MWPC_OR_VETO,eventE/10,event.get_mwpcTime()/10.);
+   	    plot(DD_TOF_V_X_POSITION,xPosition,event.get_mwpcTime()/10.);
+      	    plot(DD_TOF_V_Y_POSITION,yPosition,event.get_mwpcTime()/10.);
+
+	}
 	if (event.get_type() == heavyIon) {
-	    plot(D_TOF_HEAVY,event.get_mwpcTime());//+2000);
+	    plot(D_TOF_HEAVY,event.get_mwpcTime());
 	    plot(D_MWPC_ENERGY_HEAVY, event.get_mwpcEnergy());
             plot(DD_IMPLANT_POSITION, xPosition, yPosition);
             plot(D_ENERGY_IMPLANT, eventE/10);
@@ -1050,17 +1078,23 @@ bool Dssd4SHEProcessor::Process(RawEvent &event)
             for (unsigned int i = 0; i < NumGranularities; i++) {
 		double timeBin = ((event.get_time()-mwpcTime)
 			*Globals::get()->clockInSeconds())/timeResolution[i];
-		double energyBin = eventE;
+		//double energyBin = eventE;
 //		cout << energyBin << " " << timeBin << endl; 
 //' ' << ( event.get_time()*Globals::get()->clockInSeconds() )  << " " << ( mwpcTime*Globals::get()->clockInSeconds() ) <<  endl;
-		plot(DD_ENERGY_DECAY_TIME_GRANX + i,energyBin,timeBin);
+		plot(DD_ENERGY_DECAY_TIME_GRANX + i,eventE,timeBin);
             }
+            
+	}
+	if (event.get_type()== alpha || event.get_type()== check | event.get_type()== fission)
+	{
+            plot(DD_ENERGY_DECAY_TIME_GRANX + 9,eventE/100.,
+            ((event.get_time()-mwpcTime)*Globals::get()->clockInSeconds())/10e-8);	
 	}
 
 
 	if (hasEscape) 
 	{ // && event.get_type() == alpha) {
-	    plot(DD_SI_RAW_EDSSD+escapePos, dssdEnergy, eventE);
+	    plot(DD_SI_RAW_EDSSD+escapePos, dssdEnergy/10., escapeEnergy/200.);
 	}
 	//if (  event.get_type()!=heavyIon || ( abs(tof-2000)<1000 && MwpcE > 10 )  ) {
 	    correlator_.add_event(event, xPosition, yPosition, histo);
@@ -1134,7 +1168,18 @@ bool Dssd4SHEProcessor::pickEventType(SheEvent& event) {
     if (event.get_veto()) 
         condition += 4;
 
-    if (condition == 0) {
+    if (condition <= 1) {
+        double energy = event.get_energy();
+        if (energy < lowEnergyCut_)
+            event.set_type(check);
+        else if (energy < highEnergyCut_)
+            event.set_type(alpha);
+        else if (energy < fissionEnergyCut_)
+            event.set_type(check); //Check Energy Conditions!
+        else 
+            event.set_type(fission);
+    } 
+    /*else if (condition == 1) {
         double energy = event.get_energy();
         if (energy < lowEnergyCut_)
             event.set_type(check);
@@ -1144,28 +1189,18 @@ bool Dssd4SHEProcessor::pickEventType(SheEvent& event) {
             event.set_type(unknown); //Check Energy Conditions!
         else 
             event.set_type(fission);
-    } 
-    else if (condition == 1) {
-        double energy = event.get_energy();
-        if (energy < lowEnergyCut_)
-            event.set_type(check);
-        else if (energy < highEnergyCut_)
-            event.set_type(alpha);
-        else if (energy < fissionEnergyCut_)
-            event.set_type(unknown); //Check Energy Conditions!
-        else 
-            event.set_type(fission);
-    } 
-    else if (condition == 2 || 
-             condition == 4 ||
-             condition == 6) {
+    } */
+    
+    else if (condition == 4 ||
+             condition == 6) { //condition == 2 ||
         event.set_type(unknown);
     } 
-    else if (condition == 3 ) {
-	if (event.get_energy() > recoilEnergyCut_ && event.get_energy() < highEnergyCut_) {
+    else if (condition == 3  // ){
+             || condition ==2 ) {
+	if (event.get_energy() > recoilEnergyCut_ ) {//&& event.get_energy() < highEnergyCut_) {
             event.set_type(heavyIon);
 	} else {
-	    event.set_type(check);
+	    event.set_type(unknown);
 	}
     }
     else if (condition == 5 || condition == 7) {

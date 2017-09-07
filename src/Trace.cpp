@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <math.h>
+#include <vector>
 
 #include "Trace.hpp"
 
@@ -54,6 +56,60 @@ void Trace::TrapezoidalFilter(Trace &filter,
 
 double Trace::DoBaseline(unsigned int lo, unsigned int numBins)
 {
+// fits a line to the baseline sets the mean and sigma and returns the min.
+    if (size() < lo + numBins) {
+        cerr << "Bad range in baseline calculation." << endl;
+        return NAN;
+    }
+    lo = double(lo);
+    numBins = double(numBins);
+    double hi = lo + numBins;
+    
+    if (baselineLow == lo && baselineHigh == hi)
+        return GetValue("baseline");
+    std::vector<double> xVector;
+    for (int i = lo; i<= hi; i++) xVector.push_back(i);
+    
+    double sumX = accumulate(xVector.begin(),xVector.end(),0.0);
+    double meanX = sumX/numBins;
+    double sumY = accumulate(begin() + lo, begin() + hi, 0.0);
+    //double sumYoff = accumulate(begin()+lo+1,begin() + hi,0.0);
+    double meanY = sumY / numBins;
+    double minY = *min_element(begin()+lo,begin()+hi); 
+    double upper= 0, lower=0;
+    int numNegSpike =0;
+
+    for (int i=lo; i<=hi; i++) 
+    {
+        double dx = *(xVector.begin()+i-lo)-meanX;
+        double dy = *(begin()+i)-meanY;
+        upper += dx*dy;
+        lower += pow(dx,2.);
+    }
+    for (int i=lo; i<=size()/4; i++) 
+    {
+        double diff = *(begin()+i+1) - *(begin()+i); 
+	//cout << diff << " " ; 
+	if (diff < -5 ) 
+	{
+	  numNegSpike++;
+	}
+    } 
+    double slope = upper/lower;
+    double offset = meanY - slope*meanX;
+    double stdDev = abs(slope) * sqrt(lower/numBins);
+    //cout << upper << " "<< lower << " "<< slope << " " << offset << " " << stdDev << " " << minY << endl;
+    SetValue("baseline", meanY);
+    SetValue("sigmaBaseline", stdDev);
+    SetValue("numNegSpike",numNegSpike);
+    //cout << "nns " << numNegSpike << endl; 
+    baselineLow  = lo;
+    baselineHigh = hi;
+
+    return minY;
+}
+/*double Trace::DoBaseline(unsigned int lo, unsigned int numBins)
+{
     if (size() < lo + numBins) {
         cerr << "Bad range in baseline calculation." << endl;
         return NAN;
@@ -75,11 +131,28 @@ double Trace::DoBaseline(unsigned int lo, unsigned int numBins)
 
     baselineLow  = lo;
     baselineHigh = hi;
-
+    //cout << mean << " " << std_dev << endl;
     return mean;
-}
-
-
+}*/
+/* //backup notes tb deleted. 
+    double sum_x = (lo+hi)*(hi-lo+1.)/2.;
+    double sq_sum_x = (hi-lo+1.)*(2.*(pow(lo,2.) + pow(hi,2.) + lo*hi) -lo + hi)/6.;
+    double sqSumX = inner_product(xVector.begin(), xVector.end(),
+                                  xVector.begin(), 0.0);
+    
+    double sqSumY = inner_product(begin() + lo, begin() + hi,
+                                  begin() + lo, 0.0);
+    double sumXY = inner_product(begin() + lo, begin() + hi,
+                                  xVector.begin(), 0.0);
+ 
+    double denom = numBins*sqSumX - pow(sumX,2.);
+    double n1 = numBins*sumXY;
+    double n2 = sumX*sumY;
+    double slope  =   abs(n1/denom - n2/denom);
+    double offset =  ( sqSumX*sumY - sumX*sumXY ) / ( numBins*sqSumX - pow(sumX,2.) );
+       
+    double stdDev = sqrt( ( sqSumY +pow(slope,2.)*sqSumX+numBins*pow(offset,2.)+
+                     2*slope*offset*sumX - 2*slope*sumXY-2*offset*sumY ) / ( numBins-2 ) );*/
 unsigned int Trace::DoDiscrimination(unsigned int lo, unsigned int numBins)
 {
     unsigned int high = lo+numBins;

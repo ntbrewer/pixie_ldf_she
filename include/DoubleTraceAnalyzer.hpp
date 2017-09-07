@@ -22,8 +22,10 @@
 class DoubleTraceAnalyzer : public TraceFilterer
 {
  protected:
-    static int numDoubleTraces;
-    static int numDoubleTracesCut; ///< number of double traces found
+    static int numDoubleTraces;  ///< number of double traces found
+    static int numDoubleTracesCut;
+    static int numRejectTraces;
+    
 
  public:
     DoubleTraceAnalyzer(double energyScaleFactor,

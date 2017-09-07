@@ -8,12 +8,14 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
+//#include <functional> C++11 -> 17
 
 #include "DammPlotIds.hpp"
 #include "RandomPool.hpp"
 #include "Trace.hpp"
 #include "TraceFilterer.hpp"
 #include "Globals.hpp"
+#include "Messenger.hpp"
 
 using namespace std;
 using namespace dammIds::trace;
@@ -53,7 +55,7 @@ TraceFilterer::TraceFilterer(double energyScaleFactor,
 {
     //? this uses some legacy values for third parms, are they appropriate
     name = "Filterer";
-    useThirdFilter = false;
+    useThirdFilter = true;//false;
     energyScaleFactor_ = energyScaleFactor;
 
     //Trace::size_type rise, gap;
@@ -95,25 +97,32 @@ void TraceFilterer::DeclarePlots(void)
     unsigned short numTraces = Globals::get()->numTraces();
 
     sample_trace.DeclareHistogram2D(DD_TRACE, traceBins, numTraces,
-                                    "traces data TracePlotter");
+                                    "traces");
     sample_trace.DeclareHistogram2D(DD_FILTER1, traceBins, numTraces,
                                     "fast filter");
     sample_trace.DeclareHistogram2D(DD_FILTER2, traceBins, numTraces,
                                     "energy filter");
+                                    
     if (useThirdFilter) {
         sample_trace.DeclareHistogram2D(DD_FILTER3, traceBins, numTraces,
                                         "3rd filter");
     }
     sample_trace.DeclareHistogram2D(DD_REJECTED_TRACE, traceBins, numTraces,
                                     "rejected traces");
-
-    sample_trace.DeclareHistogram1D(D_ENERGY1, energyBins, "E1 from trace"); 
+    sample_trace.DeclareHistogram2D(DD_BIG_TRACE, traceBins, numTraces,
+                                    "if raw E is large traces");
 
     sample_trace.DeclareHistogram2D(DD_ENERGY_BOARD_FILTER,
                                  energyBins2, energyBins2, 
                                 "Board raw energy vs filter energy (/10)"); 
     sample_trace.DeclareHistogram1D(D_RATIO_BOARD_FILTER,
                 energyBins2, "Ratio raw energy to filter (%)"); 
+    sample_trace.DeclareHistogram1D(D_ENERGY1, energyBins, "E1 from trace");
+    sample_trace.DeclareHistogram2D(DD_TRACE1, traceBins, numTraces,"TRACE1");
+    sample_trace.DeclareHistogram2D(DD_TRACE2, traceBins, numTraces,"TRACE2");
+    sample_trace.DeclareHistogram2D(DD_TRACE3, traceBins, numTraces,"TRACE3");
+    sample_trace.DeclareHistogram2D(DD_TRACE4, traceBins, numTraces,"TRACE4");
+
 }
 
 void TraceFilterer::Analyze(Trace &trace,
@@ -122,24 +131,34 @@ void TraceFilterer::Analyze(Trace &trace,
     using namespace dammIds::trace::tracefilterer;
 
     if (level >= 5) {
-        const size_t baselineBins = 30;
+        const size_t baselineBins = 30, startCh=5;// start at sample 5 because first samples are occasionally corrupted
         const double deviationCut = fastThreshold / 4. /
                                     fastParms.GetRiseSamples();
 
-        double trailingBaseline  = trace.DoBaseline(
-                                trace.size() - baselineBins - 1, baselineBins);
-            
-        // start at sample 5 because first samples are occasionally corrupted
-        trace.DoBaseline(5, baselineBins);       
-        if ( trace.GetValue("sigmaBaseline") > deviationCut ||
-            abs(trailingBaseline - trace.GetValue("baseline")) < deviationCut)
+
+        double leadingBaseline = trace.DoBaseline(startCh, baselineBins); //returns minimum value
+        double sigma = trace.GetValue("sigmaBaseline");
+	int derivativeCut = trace.GetValue("numNegSpike");
+        double minTrace = *min_element(trace.begin()+startCh+baselineBins, trace.end()-1);
+        if ( sigma > deviationCut || minTrace < (leadingBaseline - 5.) || derivativeCut > 0)
         {	    
-            // perhaps check trailing baseline deviation
+            // perhaps check baseline deviation
             // from a simple linear fit 
+            //cout << sigma << " " << deviationCut << " " << (leadingBaseline - minTrace)/sigma <<endl;
             static int rejectedTraces = 0;
             unsigned short numTraces = Globals::get()->numTraces();
+
             if (rejectedTraces < numTraces)
-                trace.Plot(DD_REJECTED_TRACE, rejectedTraces++);
+	    {
+	        trace.Plot(DD_REJECTED_TRACE, rejectedTraces);
+	    } else if (rejectedTraces%1000 == 1)
+	    {
+	        Messenger m;
+	        stringstream ss;
+	        ss << "Rejected Traces = " << rejectedTraces;
+	        m.warning(ss.str());	
+	    } 
+            rejectedTraces++;
             EndAnalyze(); // update timing
             return;
         }
@@ -161,18 +180,22 @@ void TraceFilterer::Analyze(Trace &trace,
         if (pulse.isFound) {
             trace.SetValue("filterTime", (int)pulse.time);
             trace.SetValue("filterEnergy", pulse.energy);
+        //    cout << " ok " << pulse.energy << endl;
         }
 
         // now plot some stuff
-        fastFilter.ScalePlot(DD_FILTER1, numTracesAnalyzed, 
+        static int tracesAnalyzed = 0; 
+        trace.Plot(DD_TRACE, tracesAnalyzed);
+        fastFilter.ScalePlot(DD_FILTER1, tracesAnalyzed, 
                     fastParms.GetRiseSamples() );
-        energyFilter.ScalePlot(DD_FILTER2, numTracesAnalyzed,
+        energyFilter.ScalePlot(DD_FILTER2, tracesAnalyzed,
                     energyParms.GetRiseSamples() );
         if (useThirdFilter) {
-            thirdFilter.ScalePlot(DD_FILTER3, numTracesAnalyzed,
+            thirdFilter.ScalePlot(DD_FILTER3, tracesAnalyzed,
                     thirdParms.GetRiseSamples() );
         }
         trace.plot(D_ENERGY1, pulse.energy);
+         tracesAnalyzed++;
     } // sufficient analysis level
 
     EndAnalyze(trace);
@@ -182,7 +205,8 @@ const TraceFilterer::PulseInfo& TraceFilterer::FindPulse(Trace::iterator begin, 
 {
     // class to see if fast filter is above threshold
     static binder2nd< greater<Trace::value_type> > crossesThreshold
-	(greater<Trace::value_type>(), fastThreshold);
+	(greater<Trace::value_type>(), fastThreshold); //Depreciated! 
+    //consider using bind() and placeholders? and functional for C++17
 
     Trace::size_type sample;
     Trace::size_type presample;
@@ -209,8 +233,8 @@ const TraceFilterer::PulseInfo& TraceFilterer::FindPulse(Trace::iterator begin, 
         }
         //? some investigation needed here for good resolution
         // add a presample location
-        // sample = pulse.time + (energyParms.GetSize() - fastParms.GetSize()) / 2;
-        sample = pulse.time + 40;
+         sample = pulse.time + (energyParms.GetSize() + fastParms.GetSize()) / 2;
+        
         
         RandomPool* randoms = RandomPool::get();
         if (sample < energyFilter.size()) {
@@ -221,7 +245,18 @@ const TraceFilterer::PulseInfo& TraceFilterer::FindPulse(Trace::iterator begin, 
             }
             // scale to the integration time
             pulse.energy /= energyParms.GetRiseSamples();
-            pulse.energy *= energyScaleFactor_;	    
+            pulse.energy *= energyScaleFactor_;	
+            /*cout << "stats: " << pulse.energy << " " << pulse.time << " " << energyParms.GetSize() << " " << fastParms.GetSize()<< endl;
+            cout << energyFilter[presample] << " " << energyFilter[sample];
+            cout << " " << energyParms.GetRiseSamples() << " " << energyScaleFactor_ <<" ";//<< endl;
+            cout << presample << " " << sample << endl;
+            if (abs(pulse.energy - 4000) <400 ) {
+                for(int i=0; i<1000; i++)
+                {
+                   cout << " " <<energyFilter[i];
+                }
+                cout << " " << pulse.energy << endl;
+            }*/
         } else 
             pulse.energy = NAN;
 

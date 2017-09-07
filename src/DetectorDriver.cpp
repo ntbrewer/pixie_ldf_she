@@ -78,7 +78,7 @@
 
 #include "CfdAnalyzer.hpp"
 #include "DoubleTraceAnalyzer.hpp"
-//#include "FittingAnalyzer.hpp"
+#include "FittingAnalyzer.hpp"
 #include "TauAnalyzer.hpp"
 #include "TraceAnalyzer.hpp"
 #include "TraceExtracter.hpp"
@@ -522,9 +522,9 @@ void DetectorDriver::LoadProcessors(Messenger& m) {
         else if (name == "WaveformAnalyzer") {
             vecAnalyzer.push_back(new WaveformAnalyzer());
         }
-        /*else if (name == "FittingAnalyzer") {
+        else if (name == "FittingAnalyzer") {
             vecAnalyzer.push_back(new FittingAnalyzer());
-        }*/
+        }
         else if (name == "CfdAnalyzer") {
             vecAnalyzer.push_back(new CfdAnalyzer());
         }
@@ -583,9 +583,9 @@ int DetectorDriver::Init(RawEvent& rawev)
         cout << "\t" << w.what() << endl;
     }
 
-    //TimingInformation readFiles;
-    //readFiles.ReadTimingConstants();
-    //readFiles.ReadTimingCalibration();
+    TimingInformation readFiles;
+    readFiles.ReadTimingConstants();
+    readFiles.ReadTimingCalibration();
 
     rawev.GetCorrelator().Init(rawev);
 
@@ -636,29 +636,41 @@ int DetectorDriver::ProcessEvent(RawEvent& rawev){
 
             double time = (*it)->GetTime();
             double energy = (*it)->GetCalEnergy();
-	    //double raw = (*it)->GetEnergy();
+	    double raw = (*it)->GetEnergy();
             string subtype = (*it) -> GetChanID().GetSubtype();
             int location = (*it)->GetChanID().GetLocation();
-	
+	    static int numBigTraces = 1;
           	DetectorDriver* driver = DetectorDriver::get();
         	time_t theTime;
      	    theTime = driver -> GetWallTime(time);
+     	    Trace &trace      = (*it)->GetTrace();
          /*//  if (abs(theTime-1412393220)<=100 )  {
 	 //    if ( abs(theTime -1414155502)<1 ) {
 	 //   if ( abs(theTime -1414942700)<1 ) {
 	 //     if ( abs(theTime -1414919700)==0) {
-	   if ( abs(theTime -1444361659)==0) {
 	 // if ( (theTime -1413723540)>0 && (theTime -1413723540)< 500 ) {
          */
 	  // if ( abs(theTime-1482716639) < 201) {
-	 /*if ( abs(theTime-1484649104) < 1) {
+	 /*if ( abs(theTime-1484649104) < 1) {*/
+	 //if ( abs(theTime-1486627614) < 1) {
+	 //if ( abs(theTime-1484438895) <1) {
+	 //if ( abs(theTime-1486143067) <1) {
+	 //if ( abs(theTime-1449907967) <3 || abs(theTime-1450480525) <3) {
+	 //  if ( abs(theTime -1444361659)<1) {
+          if ( abs(theTime -1485033558)<1) {
 	         stringstream ss;
 		 ss.precision(15);
-                 ss << theTime << " " << time << " " << subtype << " " << location <<  " " << energy << " " << (*it)-> IsSaturated() << " " << (*it)-> IsPileup() << endl;
-//                  Messenger m;
-//                  m.run_message(ss.str());
-    		 Notebook::get()->report(ss.str());
-	    }*/
+                 ss << theTime << " " << time << " " << subtype << " " << location << " " << raw <<  " " << energy << " " << (*it)-> IsSaturated() << " " << (*it)->IsPileup() << " t " << !trace.empty() << endl;
+                if ( !trace.empty() )//(board_energy > 50000 || energy > 50000) 
+                {
+                    trace.Plot(dammIds::trace::tracefilterer::DD_BIG_TRACE, numBigTraces );
+                    numBigTraces++;
+                    cout << "ok "<< raw << " " << energy << endl;
+                }                 
+                //  Messenger m;
+                //  m.run_message(ss.str());
+    		Notebook::get()->report(ss.str());
+	  }
             EventData data(time, energy, location);
             TreeCorrelator::get()->place(place)->activate(data);
         } 
@@ -711,7 +723,6 @@ void DetectorDriver::DeclarePlots()
                            "number of channels in event");
         DeclareHistogram1D(D_BUFFER_END_TIME, SE, "length of buffer, 1 ms bin");
         DeclareHistogram2D(DD_RUNTIME_SEC, SE, S6, "run time - s");
-        DeclareHistogram2D(DD_DEAD_TIME_CUMUL, SE, S6, "dead time - cumul");
         DeclareHistogram2D(DD_BUFFER_START_TIME, SE, S6, "dead time - 0.1%");
         DeclareHistogram2D(DD_RUNTIME_MSEC, SE, S7, "run time - ms");
         DeclareHistogram1D(D_NUMBER_OF_EVENTS, S4, "event counter");
@@ -746,11 +757,11 @@ void DetectorDriver::DeclarePlots()
                                ("CalE " + idstr.str()).c_str() );
 #endif
         }
-#ifdef PLOTRAWCAL
+/*#ifdef PLOTRAWCAL
 	for (int j=0; j < 12; j++) {
              DeclareHistogram2D(DD_RAW_V_CAL+j,SC,SE,"Raw vs. Calibrated Energy");
 	}
-#endif
+#endif*/
         // Now declare histograms present in all used analyzers and
         // processors
         for (vector<TraceAnalyzer *>::const_iterator it = vecAnalyzer.begin();
@@ -794,9 +805,8 @@ int DetectorDriver::ThreshAndCal(ChanEvent *chan, RawEvent& rawev)
     string subtype    = chanId.GetSubtype();
     bool hasStartTag  = chanId.HasTag("start");
     Trace &trace      = chan->GetTrace();
-
+    
     RandomPool* randoms = RandomPool::get();
-
     double energy = 0.0;
 
     if (type == "ignore" || type == "") {
@@ -812,10 +822,11 @@ int DetectorDriver::ThreshAndCal(ChanEvent *chan, RawEvent& rawev)
             it != vecAnalyzer.end(); it++) {	
                 (*it)->Analyze(trace, type, subtype);
         }
-
+	
         if (trace.HasValue("filterEnergy") ) {     
             if (trace.GetValue("filterEnergy") > 0) {
                 energy = trace.GetValue("filterEnergy");
+		//int cut = trace.GetValue("numNegSpike");
 #ifdef PLOTRAWCAL
                 plot(D_FILTER_ENERGY + id, energy);
 #endif
@@ -825,10 +836,29 @@ int DetectorDriver::ThreshAndCal(ChanEvent *chan, RawEvent& rawev)
                  */
                 using namespace dammIds::trace::tracefilterer;
                 double board_energy = chan->GetEnergy();
+		static int numt1=0,numt2=0,numt3=0,numt4=0;
+                //static int numBigTraces =0;
+		double ratio = board_energy / energy * 100;
                 trace.plot(DD_ENERGY_BOARD_FILTER, 
-                            board_energy / 10.0, energy / 10.0);
-                trace.plot(D_RATIO_BOARD_FILTER,
-                            board_energy / energy * 100.0);
+                            board_energy / 100.0, (energy) / 10.0);
+                trace.plot(D_RATIO_BOARD_FILTER, ratio);
+		if (ratio <= 90) 
+		{
+		  trace.Plot(DD_TRACE1,numt1);
+		  numt1++;
+		} else if (ratio>90 && ratio<=150)
+		{
+		  trace.Plot(DD_TRACE2,numt2);
+		  numt2++;
+		} else if (ratio>150 && ratio<=300)
+		{
+		  trace.Plot(DD_TRACE3,numt3);
+		  numt3++;
+		} else 
+		{
+		  trace.Plot(DD_TRACE4,numt4);
+		  numt4++;
+		}
 
                 trace.SetValue("filterEnergyCal",
                     cali.GetCalEnergy(chanId, trace.GetValue("filterEnergy")));
@@ -840,17 +870,23 @@ int DetectorDriver::ThreshAndCal(ChanEvent *chan, RawEvent& rawev)
              * add filterEnergyXCal to the trace */
             int pulses = trace.GetValue("numPulses");
             for (int i = 1; i < pulses; ++i) {
+                //using namespace dammIds::trace::tracefilterer;
                 stringstream energyName;
+                //double board_energy = chan->GetEnergy();
                 energyName << "filterEnergy" << i + 1;
+                double energy = trace.GetValue(energyName.str());
+                //trace.plot(DD_ENERGY_BOARD_FILTER, 
+                //            board_energy / 100.0, (energy) / 10.0);
+                //trace.plot(D_RATIO_BOARD_FILTER,
+                //            board_energy / energy * 100.0);
+                //cout << "filterEnergy" << trace.GetValue(energyName.str()) << " "<< chan->GetEnergy() << endl;
                 stringstream energyCalName;
                 energyCalName << "filterEnergy" << i + 1 << "Cal";
-                trace.SetValue(energyCalName.str(),
-                    cali.GetCalEnergy(chanId, 
-                                      trace.GetValue(energyName.str())));
+                trace.SetValue(energyCalName.str(), cali.GetCalEnergy(chanId, energy));
             }
         }
 
-        if (trace.HasValue("calcEnergy") ) {	    
+        if (trace.HasValue("calcEnergy") ) {
             energy = trace.GetValue("calcEnergy");
             chan->SetEnergy(energy);
         } else if (!trace.HasValue("filterEnergy")) {
